@@ -35,3 +35,6 @@ rails new sprint0 -d postgresql \
  * --skip-keeps: we're going to create only the keep files we need
  * -m ...: use this template after creating the bare project 
  * -a propshaft: use propshaft for assets
+
+### Notes
+ * Make sure to have your global `rbenv` version up to date.

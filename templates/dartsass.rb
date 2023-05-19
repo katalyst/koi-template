@@ -6,3 +6,5 @@ unless file_contains?("Gemfile", "dartsass-rails")
   gem "dartsass-rails"
 end
 
+template("config/initializers/dartsass.rb")
+template("lib/tasks/dartsass.rake")

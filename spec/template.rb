@@ -17,6 +17,7 @@ gem_group("test") do
   gem "webmock"
 end
 
-copy_file("spec/rails_helper.rb")
-copy_file("spec/spec_helper.rb")
-copy_file("spec/support/capybara.rb")
+root = Pathname.new(__dir__).join("..")
+root.glob("spec/system/**/*_spec.rb").sort.each do |f|
+  copy_file(f.relative_path_from(root))
+end

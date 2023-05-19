@@ -4,24 +4,35 @@ def apply_template!
   add_template_repository_to_source_path
 
   setup_readme
-  setup_secrets
   setup_rubocop
   setup_rspec
+  setup_basic_auth
+  setup_healthcheck
+  setup_sentry
   setup_github_actions
   setup_dartsass
   setup_database
+  setup_seeds
   setup_rakefile
-  setup_staging
   setup_timezone
+  setup_koi
   setup_routes
 
-  run("bin/setup")
-
   after_bundle do
-    remove_unused_files
+    setup_secrets
+    setup_staging
+    setup_stylesheets
+
     install_dartsass
+    install_koi
+
+    remove_unused_files
+    override_default_files
+
+    run("bin/setup")
+
     run("rake format || true")
-    run("bundle lock --add-platform arm64-linux")
+    run("bundle lock --add-platform aarch64-linux")
     run("bundle lock --add-platform x86_64-linux")
     configure_git
   end
@@ -47,6 +58,20 @@ def setup_rspec
   apply "spec/template.rb"
 end
 
+def setup_basic_auth
+  gem "katalyst-basic-auth", git: "https://github.com/katalyst/katalyst-basic-auth"
+end
+
+def setup_healthcheck
+  gem "katalyst-healthcheck"
+end
+
+def setup_sentry
+  gem "sentry-rails"
+
+  template("config/initializers/sentry.rb")
+end
+
 def setup_github_actions
   template("github/workflows/test.yml", ".github/workflows/test.yml", force: true)
 end
@@ -59,12 +84,16 @@ def setup_database
   template("config/database.yml", force: true)
 end
 
+def setup_seeds
+  template("db/seeds.rb", force: true)
+end
+
 def setup_rakefile
   template("Rakefile", force: true)
 end
 
 def setup_staging
-  copy_file("config/environments/production.rb", "config/environments/staging.rb")
+  template("config/environments/production.rb", "config/environments/staging.rb")
 end
 
 def setup_timezone
@@ -72,12 +101,34 @@ def setup_timezone
   gsub_file("config/application.rb", "Central Time (US & Canada)", "Adelaide")
 end
 
+def setup_koi
+  apply("templates/koi.rb")
+end
+
 def setup_routes
   template("config/routes.rb", force: true)
 end
 
+def setup_stylesheets
+  root = Pathname.new(__dir__)
+  root.glob("app/assets/stylesheets/**/*.scss").sort.each do |f|
+    copy_file(f.relative_path_from(root), force: true)
+  end
+end
+
 def remove_unused_files
   apply "templates/remove-unused-files.rb"
+end
+
+def override_default_files
+  apply("templates/override-default-files.rb")
+end
+
+def install_koi
+  run("rails koi:install:migrations")
+  run("rails katalyst_content:install:migrations")
+  run("rails katalyst_navigation:install:migrations")
+  run("rails action_text:install")
 end
 
 def install_dartsass
@@ -87,6 +138,7 @@ end
 def configure_git
   get("https://raw.githubusercontent.com/github/gitignore/main/Rails.gitignore", ".gitignore")
   gsub_file(".gitignore", /^\s*#\s*TODO.*\n/, '')
+  append_to_file(".gitignore", "app/assets/builds/*\n!/app/assets/builds/.keep")
 
   git(:init)
   git(add: "-A")

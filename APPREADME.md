@@ -2,18 +2,10 @@
 
 Katalyst project for <%= @app_name %>
 
-## Setup
+## Development
 
-```
-bin/setup
-rails importmap:install
-rails turbo:install
-rails stimulus:install
-rails dartsass:install
-```
-
-### Setup notes
-`rails dartsass:install` will also create and configure [foreman](https://github.com/ddollar/foreman) 
+To run the rails server as well as watching for dartsass changes, the application provides a Procfile (ran through foreman)
+to use this, run `bin/dev` then visit `localhost`
 
 ### Prerequisites
 
