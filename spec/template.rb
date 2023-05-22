@@ -18,6 +18,6 @@ gem_group("test") do
 end
 
 root = Pathname.new(__dir__).join("..")
-root.glob("spec/system/**/*_spec.rb").sort.each do |f|
+root.glob("spec/{requests,system}/**/*_spec.rb").sort.each do |f|
   copy_file(f.relative_path_from(root))
 end

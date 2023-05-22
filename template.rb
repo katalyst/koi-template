@@ -16,6 +16,7 @@ def apply_template!
   setup_rakefile
   setup_timezone
   setup_koi
+  setup_homepage
   setup_routes
 
   after_bundle do
@@ -105,6 +106,11 @@ end
 
 def setup_koi
   apply("templates/koi.rb")
+end
+
+def setup_homepage
+  template("app/controllers/homepages_controller.rb")
+  template("app/views/homepages/show.html.erb")
 end
 
 def setup_routes
