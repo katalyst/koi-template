@@ -34,6 +34,8 @@ def apply_template!
     run("rake format || true")
     run("bundle lock --add-platform aarch64-linux")
     run("bundle lock --add-platform x86_64-linux")
+
+    add_docker
     configure_git
   end
 end
@@ -133,6 +135,13 @@ end
 
 def install_dartsass
   run("rails dartsass:install")
+end
+
+def add_docker
+  root = Pathname.new(__dir__)
+  root.glob("docker/**/*").reject { |f| File.directory?(f) }.sort.each do |f|
+    copy_file(f.relative_path_from(root), force: true)
+  end
 end
 
 def configure_git

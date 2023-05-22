@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+openssl req -x509 -newkey rsa:2048 -nodes -days 730 \
+  -subj '/CN=docker/' \
+  -keyout /etc/ssl/private/selfsigned.key \
+  -out /etc/ssl/private/selfsigned.crt
+
+nginx
+
+bundle exec rake db:migrate
+exec bundle exec puma -b unix:/app/tmp/sockets/puma.sock -t 1:$PUMA_MAX_THREADS -w $PUMA_PROCESSES
