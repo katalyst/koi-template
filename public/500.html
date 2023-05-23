@@ -1,18 +1,33 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>We're sorry, but something went wrong (500)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="errors.css">
-</head>
+    <head>
+        <title>500</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<body class="rails-default-error-page">
-<!-- This file lives in public/500.html -->
-<div class="dialog">
-  <div>
-    <h1>We're sorry, but something went wrong.</h1>
-  </div>
-  <p>If you are the application owner check the logs for more information.</p>
-</div>
-</body>
+        <link rel="preconnect" href="https://rsms.me/">
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-css-reset@1.4.0/dist/reset.min.css">
+
+        <style>
+            :root {
+                --site-primary: white;
+                --site-on-primary: black;
+            }
+        </style>
+        <link rel="stylesheet" href="errors.css">
+    </head>
+
+    <body>
+        <!-- This file lives in public/500.html -->
+        <div class="error-content">
+            <h1>500</h1>
+            <div>
+                <h2>We're sorry, but something went wrong</h2>
+            </div>
+            <a href="/">Back to homepage</a>
+        </div>
+
+        <footer>
+        </footer>
+    </body>
 </html>

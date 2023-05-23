@@ -1,19 +1,34 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>The change you wanted was rejected (422)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="errors.css">
-</head>
+    <head>
+        <title>422</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<body class="rails-default-error-page">
-  <!-- This file lives in public/422.html -->
-  <div class="dialog">
-    <div>
-      <h1>The change you wanted was rejected.</h1>
-      <p>Maybe you tried to change something you didn't have access to.</p>
-    </div>
-    <p>If you are the application owner check the logs for more information.</p>
-  </div>
-</body>
+        <link rel="preconnect" href="https://rsms.me/">
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-css-reset@1.4.0/dist/reset.min.css">
+
+        <style>
+            :root {
+                --site-primary: white;
+                --site-on-primary: black;
+            }
+        </style>
+        <link rel="stylesheet" href="errors.css">
+    </head>
+
+    <body>
+        <!-- This file lives in public/422.html -->
+        <div class="error-content">
+            <h1>422</h1>
+            <div>
+                <h2>The change you wanted was rejected</h2>
+                <p>Maybe you tried to change something you didn't have access to</p>
+            </div>
+            <a href="/">Back to homepage</a>
+        </div>
+
+        <footer>
+        </footer>
+    </body>
 </html>
