@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
-unless file_contains?("Gemfile", "koi")
-  gem "koi", git: "https://github.com/katalyst/koi"
-end
+add_gem_above_groups("koi", github: "katalyst/koi")
 
 # koi requires action_text
 uncomment_lines("config/application.rb", /action_text/)

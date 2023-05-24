@@ -2,9 +2,7 @@
 
 remove_file("app/assets/stylesheets/application.css")
 
-unless file_contains?("Gemfile", "dartsass-rails")
-  gem "dartsass-rails"
-end
+add_gem_above_groups("dartsass-rails")
 
 template("config/initializers/dartsass.rb")
 template("lib/tasks/dartsass.rake")

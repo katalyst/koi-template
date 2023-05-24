@@ -29,6 +29,7 @@ def apply_template!
 
     remove_unused_files
     override_default_files
+    cleanup_gemfile
     setup_release_tag
 
     run("bin/setup")
@@ -63,15 +64,16 @@ def setup_rspec
 end
 
 def setup_basic_auth
-  gem "katalyst-basic-auth", git: "https://github.com/katalyst/katalyst-basic-auth"
+
+  add_gem_above_groups("katalyst-basic-auth", github: "katalyst/katalyst-basic-auth")
 end
 
 def setup_healthcheck
-  gem "katalyst-healthcheck"
+  add_gem_above_groups("katalyst-healthcheck")
 end
 
 def setup_sentry
-  gem "sentry-rails"
+  add_gem_above_groups("sentry-rails")
 
   template("config/initializers/sentry.rb")
 end
@@ -136,6 +138,13 @@ def override_default_files
   apply("templates/override-default-files.rb")
 end
 
+def cleanup_gemfile
+  gsub_file("Gemfile", /^\s*#\s*.*\n/, '')
+  unpin_gem("pg")
+  unpin_gem("puma")
+  unpin_gem("rails")
+end
+
 def setup_release_tag
   apply "templates/release-tag.rb"
 end
@@ -178,6 +187,48 @@ def file_contains?(file, contains)
   return false unless file_exists?(file)
 
   File.foreach(file).any? { |line| line.include?(contains) }
+end
+
+def add_gem_above_groups(gem, options = {})
+  if options.any?
+    insert_into_file("Gemfile", "gem '#{gem}', #{options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")}\n", :before => "\ngroup :development, :test do")
+  else
+    insert_into_file("Gemfile", "gem '#{gem}'\n", :before => "\ngroup :development, :test do")
+  end
+end
+
+def add_into_dev_test_gem_group(gem, options = {})
+  if file_contains?("Gemfile", "group :development, :test do")
+    if options.any?
+      insert_into_file("Gemfile", "gem '#{gem}', #{options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")}\n", :after => "group :development, :test do\n")
+    else
+      insert_into_file("Gemfile", "gem '#{gem}'\n", :after => "group :development, :test do\n")
+    end
+  else
+    gem_group :development, :test do
+      gem gem, **options
+    end
+  end
+end
+
+def add_into_test_gem_group(gem, options = {})
+  if file_contains?("Gemfile", "group :test do")
+    if options.any?
+      insert_into_file("Gemfile", "gem '#{gem}', #{options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")}\n", :after => "group :test do\n")
+    else
+      insert_into_file("Gemfile", "gem '#{gem}'\n", :after => "group :test do\n")
+    end
+  else
+    gem_group :test do
+      gem gem, **options
+    end
+  end
+end
+
+def unpin_gem(gem)
+  if file_contains?("Gemfile", "gem \"#{gem}\"")
+    gsub_file("Gemfile", /gem \"#{gem}\"+.+\n/, "gem \"#{gem}\"\n")
+  end
 end
 
 apply_template!

@@ -15,6 +15,6 @@ run("bin/importmap unpin @rails/actiontext")
 gsub_file("app/javascript/application.js", "import \"trix\"\n", "")
 gsub_file("app/javascript/application.js", "import \"@rails/actiontext\"\n", "")
 
-gsub_file("Gemfile", /^ruby.+\n/, "")
+gsub_file("Gemfile", /ruby "+.[[:graph:]]+"/, "")
 
 template("config/locales/en.yml", force: true)

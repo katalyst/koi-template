@@ -17,3 +17,5 @@ AllCops:
   TargetRubyVersion: 3.1
 RSpec/MultipleMemoizedHelpers:
   Max: 25
+Bundler/OrderedGems:
+  Enabled: true

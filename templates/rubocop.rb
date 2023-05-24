@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-gem_group :development, :test do
-  gem "rubocop-katalyst", require: false
-end unless file_contains?("Gemfile", "rubocop-katalyst")
+add_into_dev_test_gem_group("rubocop-katalyst", require: false)
 
 template("rubocop.yml", ".rubocop.yml")
