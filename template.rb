@@ -151,6 +151,7 @@ def add_docker
   root.glob("docker/**/*").reject { |f| File.directory?(f) }.sort.each do |f|
     copy_file(f.relative_path_from(root), force: true)
   end
+  chmod "docker/bin/web", 0755
 end
 
 def configure_git
