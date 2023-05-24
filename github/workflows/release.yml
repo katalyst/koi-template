@@ -1,0 +1,101 @@
+# This workflow will run when a release tag is created pushed
+name: Release to AWS ECR and deploy to staging
+
+on:
+  push:
+    tags:
+      - release/**
+concurrency: continuous-deployment
+env:
+  AWS_DEFAULT_REGION: ap-southeast-2
+  DOCKER_BUILDKIT: 1
+  ECR: ${{ vars.ECR_URL }}
+jobs:
+  build:
+    runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    steps:
+      - name: "Install AWS CLI" # not installed by default on buildjet images
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+      - name: "Get docker sanitised release tag"
+        run: echo RELEASE_TAG=$(echo $GITHUB_REF_NAME | sed 's|/|-|g') >> $GITHUB_ENV
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+      - name: Find latest release version
+        id: last_release
+        run: >-
+          echo tag=$(
+          aws ecr describe-images --repository-name=${{ vars.ECR_NAME }} --image-ids=imageTag=production |
+          jq '.imageDetails[0].imageTags[] | select(startswith("release-"))' -r |
+          sed 's|-|/|') >> $GITHUB_OUTPUT
+      - name: Sign in docker to Amazon ECR
+        run: >-
+          aws ecr get-login-password --region ${{ env.AWS_DEFAULT_REGION }} |
+          docker login --username AWS --password-stdin ${ECR}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: "Build ${{ github.ref_name }}"
+        run: >-
+          docker build
+          --build-arg "APPLICATION_REVISION=${{ github.sha }}"
+          --build-arg "APPLICATION_VERSION=${{ github.ref_name }}"
+          --build-arg "ASSET_HOST_PREFIX=${{ env.RELEASE_TAG }}"
+          --build-arg BUILDKIT_INLINE_CACHE=1
+          --build-arg "CDN_ASSET_PREFIX=${{ env.RELEASE_TAG }}"
+          --tag "${ECR}:latest"
+          --tag "${ECR}:${RELEASE_TAG}"
+          --file docker/app.dockerfile .
+      - name: "Push to ${{ vars.ECR_URL }}"
+        run: |
+          docker push -a ${ECR}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+      - name: Deploy to ${{ vars.ecs_service}}
+        run: >-
+          aws ecs update-service --cluster ${{ vars.ecs_cluster }}
+          --service ${{ vars.ecs_service }}
+          --force-new-deployment
+          --region ${{ env.AWS_DEFAULT_REGION }}
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Release Notes
+        uses: octokit/request-action@v2.1.6
+        id: get_release_notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          route: POST /repos/${{ github.repository }}/releases/generate-notes
+          tag_name: ${{ github.ref_name }}
+          previous_tag_name: ${{ steps.last_release.outputs.tag }}
+      - name: Set Release content
+        run: |
+          echo "RELEASE_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "${{ fromJson(steps.get_release_notes.outputs.data).body }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Generate Release
+        uses: octokit/request-action@v2.1.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          route: POST /repos/${{ github.repository }}/releases
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body: ${{ toJSON(env.RELEASE_CONTENT) }}
+          prerelease: true

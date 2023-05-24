@@ -76,7 +76,10 @@ def setup_sentry
 end
 
 def setup_github_actions
-  template("github/workflows/test.yml", ".github/workflows/test.yml", force: true)
+  root = Pathname.new(__dir__)
+  root.glob("github/workflows/*.yml").sort.each do |f|
+    template(f.relative_path_from(root), ".#{f.relative_path_from(root)}", force: true)
+  end
 end
 
 def setup_dartsass
