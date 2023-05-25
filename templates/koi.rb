@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 unless file_contains?("Gemfile", "koi")
-  gem "koi", git: "https://github.com/katalyst/koi", branch: "feature/cache-fix"
+  gem "koi", git: "https://github.com/katalyst/koi"
 end
 
 # koi requires action_text
