@@ -162,7 +162,7 @@ def configure_git
   git(:init)
   git(add: "-A")
   git(commit: "-m 'Initial commit'")
-  git(remote: "add origin git@github.com:katalyst/#{@app_name}.git")
+  git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git")
 end
 
 def file_exists?(file)
