@@ -29,6 +29,7 @@ def apply_template!
 
     remove_unused_files
     override_default_files
+    setup_release_tag
 
     run("bin/setup")
 
@@ -133,6 +134,10 @@ end
 
 def override_default_files
   apply("templates/override-default-files.rb")
+end
+
+def setup_release_tag
+  apply "templates/release-tag.rb"
 end
 
 def install_koi
