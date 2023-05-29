@@ -1,15 +1,32 @@
 # <%= @app_name %>
 
-Katalyst project for <%= @app_name %>
+Katalyst project for <%= @app_name %>.
 
 ## Development
 
-To run the rails server as well as watching for dartsass changes, the application provides a Procfile (ran through foreman)
-to use this, run `bin/dev` then visit `localhost`. 
+To run the rails server as well as watching for dartsass changes, the
+application provides a Procfile (ran through foreman) to use this, run `bin/dev`
+then visit `localhost`.
 
-Koi has been mounted automatically at `/admin`, which can be configured via the routes file.
+### Admin
 
-Configures 7-in-1 SCSS folder structure.
+Koi has been mounted automatically at `/admin`, which can be configured via the
+routes file.
+
+You will need to create an admin user from the console to access `/admin`. In
+production and staging environments you can do this by getting a shell on an
+instance using `bin/ecs-ssh`.
+
+```ruby
+require "securerandom"
+password = SecureRandom.base58(16)
+puts "Your temporary password is #{password}"
+AdminUser.create(first_name: "First", last_name: "Last", email: "first.last@katalyst.com.au", password:)
+```
+
+If your username matches your Katalyst email address then when you're running
+locally with local admin enabled in AdminController then you will be
+automatically signed in as yourself. 
 
 ### Prerequisites
 
