@@ -17,7 +17,10 @@ def apply_template!
   setup_timezone
   setup_koi
   setup_homepage
+  setup_release_tag
   setup_routes
+
+  cleanup_gemfile
 
   after_bundle do
     setup_secrets
@@ -29,10 +32,8 @@ def apply_template!
 
     remove_unused_files
     override_default_files
-    cleanup_gemfile
-    setup_release_tag
 
-    run("bin/setup")
+    run("rake db:prepare db:migrate")
 
     run("rake format || true")
     run("bundle lock --add-platform aarch64-linux")
@@ -43,8 +44,29 @@ def apply_template!
   end
 end
 
+# Add this template directory to source_paths so that Thor actions like
+# copy_file and template resolve against our source files. If this file was
+# invoked remotely via HTTP, that means the files are not present locally.
+# In that case, use `git clone` to download them to a local temporary dir.
+#
+# Based on https://github.com/mattbrictson/rails-template/blob/main/template.rb
 def add_template_repository_to_source_path
-  source_paths.unshift(File.dirname(__FILE__))
+  if __FILE__ =~ %r{\Ahttps?://}
+    require "tmpdir"
+    source_paths.unshift(tempdir = Dir.mktmpdir("koi-template-"))
+    at_exit { FileUtils.remove_entry(tempdir) }
+    git clone: [
+                 "--quiet",
+                 "https://github.com/katalyst/koi-template.git",
+                 tempdir
+               ].map(&:shellescape).join(" ")
+
+    if (branch = __FILE__[%r{koi-template/(.+)/template.rb}, 1])
+      Dir.chdir(tempdir) { git checkout: branch }
+    end
+  else
+    source_paths.unshift(File.dirname(__FILE__))
+  end
 end
 
 def setup_readme
@@ -79,10 +101,7 @@ def setup_sentry
 end
 
 def setup_github_actions
-  root = Pathname.new(__dir__)
-  root.glob("github/workflows/*.yml").sort.each do |f|
-    template(f.relative_path_from(root), ".#{f.relative_path_from(root)}", force: true)
-  end
+  directory("github", ".github")
 end
 
 def setup_dartsass
@@ -131,10 +150,7 @@ def setup_routes
 end
 
 def setup_stylesheets
-  root = Pathname.new(__dir__)
-  root.glob("app/assets/stylesheets/**/*.scss").sort.each do |f|
-    copy_file(f.relative_path_from(root), force: true)
-  end
+  directory("app/assets/stylesheets")
 end
 
 def remove_unused_files
@@ -168,11 +184,7 @@ def install_dartsass
 end
 
 def add_docker
-  root = Pathname.new(__dir__)
-  root.glob("docker/**/*").reject { |f| File.directory?(f) }.sort.each do |f|
-    copy_file(f.relative_path_from(root), force: true)
-  end
-  chmod "docker/bin/web", 0755
+  directory("docker", mode: :preserve)
 end
 
 def configure_git

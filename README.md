@@ -34,7 +34,7 @@ rails new sprint0 -d postgresql \
             --skip-git \
             --skip-keeps \
             -a propshaft \
-            -m koi-template/template.rb
+            -m https://raw.githubusercontent.com/katalyst/koi-template/main/template.rb
 ```
 
  * subset of --minimal configuration

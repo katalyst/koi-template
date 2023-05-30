@@ -12,8 +12,3 @@ add_into_test_gem_group("cuprite")
 add_into_test_gem_group("rack_session_access")
 add_into_test_gem_group("rails-controller-testing")
 add_into_test_gem_group("webmock")
-
-root = Pathname.new(__dir__).join("..")
-root.glob("spec/{requests,system}/**/*_spec.rb").sort.each do |f|
-  copy_file(f.relative_path_from(root))
-end
