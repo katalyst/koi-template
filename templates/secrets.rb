@@ -12,5 +12,6 @@ end
 # used in production. We will generate credentials for test and development
 # instead.
 remove_file("config/master.key")
+remove_file("config/credentials.yml.enc")
 write_secret_key_base(create_secret, "development")
 write_secret_key_base(create_secret, "test")
