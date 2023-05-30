@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+ENVIRONMENT="staging"
+KNOWN_ENVIRONMENTS=("staging" "production")
+CLUSTER="ecs-katalyst"
+REGION="ap-southeast-2"
+CONTAINER="<%= @app_name %>"
+PROJECT="katalyst-${CONTAINER}"
+TASK=""
+COMMAND="/bin/bash"
+
+while getopts e:t:c: option
+do
+    case "${option}" in
+        e) ENVIRONMENT=${OPTARG};;
+        t) TASK=${OPTARG};;
+        c) COMMAND="${OPTARG}";;
+        *) exit 1;;
+    esac
+done
+
+match=0
+for environ in "${KNOWN_ENVIRONMENTS[@]}"; do
+    if [[ $environ = "$ENVIRONMENT" ]]; then
+        match=1
+        break
+    fi
+done
+if [[ $match = 0 ]]; then
+    echo "$ENVIRONMENT is not a known katalyst environment"
+    exit 1
+fi
+
+if [ -z "${TASK}" ]; then
+    TASK="$(aws ecs list-tasks --cluster "$CLUSTER" --service-name "${PROJECT}-${ENVIRONMENT}" --region "$REGION" --output json | jq -r .taskArns[0])"
+fi
+
+exec aws ecs execute-command --cluster "$CLUSTER" --region "$REGION" --container "${CONTAINER}" --task "$TASK" --interactive --command "$COMMAND"

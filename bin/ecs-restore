@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+BUCKET="ecs-katalyst-database-backups"
+ENVIRONMENT="staging"
+RESTORE_DB="<%= @app_name %>_development"
+KNOWN_ENVIRONMENTS=("staging" "production")
+PROJECT="katalyst-<%= @app_name %>"
+CLEAN=false
+
+while getopts b:e:r:c option
+do
+    case "${option}" in
+        b) BUCKET=${OPTARG};;
+        e) ENVIRONMENT=${OPTARG};;
+        r) RESTORE_DB=${OPTARG};;
+        c) CLEAN=true;;
+        *) exit 1;;
+    esac
+done
+
+match=0
+for environ in "${KNOWN_ENVIRONMENTS[@]}"; do
+    if [[ $environ = "$ENVIRONMENT" ]]; then
+        match=1
+        break
+    fi
+done
+if [[ $match = 0 ]]; then
+    echo "$ENVIRONMENT is not a known environment, no backup found"
+    exit 1
+fi
+
+if [ "$CLEAN" = true ]; then
+  echo "Dropping and re-creating ${RESTORE_DB}"
+  bundle
+  dropdb -f "$RESTORE_DB"
+  bin/rails db:create
+fi
+
+URL="s3://${BUCKET}/${PROJECT}-${ENVIRONMENT}/"
+KEY="$(aws s3 ls "${URL}" | sort | awk 'END {print $4}')" || true
+
+if [ -z "$KEY" ]; then
+  echo "No database backup found"
+  exit 1
+fi
+
+URL="${URL}${KEY}"
+echo "Restoring ${URL} to ${RESTORE_DB}"
+aws s3 cp "${URL}" - | pg_restore --clean --if-exists --no-acl --no-owner --dbname "postgresql:///${RESTORE_DB}"

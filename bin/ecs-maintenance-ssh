@@ -1,0 +1,56 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+ENVIRONMENT="staging"
+CLUSTER="ecs-katalyst"
+KNOWN_ENVIRONMENTS=("staging" "production")
+PROJECT="katalyst-<%= @app_name %>"
+COMMAND="/bin/bash"
+
+while getopts b:e:r:c option
+do
+    case "${option}" in
+        e) ENVIRONMENT=${OPTARG};;
+        *) exit 1;;
+    esac
+done
+
+match=0
+for environ in "${KNOWN_ENVIRONMENTS[@]}"; do
+    if [[ $environ = "$ENVIRONMENT" ]]; then
+        match=1
+        break
+    fi
+done
+if [[ $match = 0 ]]; then
+    echo "$ENVIRONMENT is not a known environment, exiting"
+    exit 1
+fi
+
+TASK_ARN=$(aws ecs run-task \
+  --cluster "$CLUSTER" \
+  --enable-execute-command \
+  --task-definition "$PROJECT-$ENVIRONMENT-maintenance" \
+  --network-configuration "awsvpcConfiguration={subnets=[subnet-0d11b1a1454181d4c,subnet-05bcadcac2d4e5979,subnet-054748b05595d8621],securityGroups=[sg-02793939997cd095d],assignPublicIp=ENABLED}" \
+  --overrides '{ "containerOverrides": [ { "name": "maintenance", "command": ["/usr/bin/tail", "-f", "/dev/null"],  "environment": [ { "name": "NEW_RELIC_AGENT_ENABLED", "value": "false" } ] } ] }' \
+  --query tasks[].taskArn --output text) || true
+
+TASK_ID=$(echo "$TASK_ARN" | cut -d '/' -f3)
+echo "Launching task, please stand by for interactive shell"
+
+TASK_STATUS=$(aws ecs describe-tasks --cluster "$CLUSTER" --region "ap-southeast-2" --tasks "$TASK_ARN" --query tasks[].containers[].managedAgents[].lastStatus --output text)
+
+while [ "$TASK_STATUS" != "RUNNING" ]
+do
+  sleep 5
+  TASK_STATUS=$(aws ecs describe-tasks --cluster "$CLUSTER" --region "ap-southeast-2" --tasks "$TASK_ARN" --query tasks[].containers[].managedAgents[].lastStatus --output text)
+  echo "Container launching..."
+done
+
+aws ecs execute-command --cluster "$CLUSTER" --region "ap-southeast-2" --container maintenance --task "$TASK_ID" --interactive --command "$COMMAND"
+
+STOPPED=$(aws ecs stop-task --cluster "$CLUSTER" --task "$TASK_ID" --region "ap-southeast-2") || true
+
+echo "cleaning up maintenance container $TASK_ID, thanks for flying ECS with Katalyst"
