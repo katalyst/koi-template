@@ -22,3 +22,5 @@ end
 
 # ensure load paths are correct for engines
 insert_into_file("config/application.rb", "\n\tconfig.railties_order = [:main_app, Koi::Engine, :all]\n", :after => "config.generators.system_tests = nil\n")
+
+insert_into_file("app/controllers/application_controller.rb", "\n\tinclude Katalyst::Navigation::HasNavigation\n", :after => "class ApplicationController < ActionController::Base\n")
