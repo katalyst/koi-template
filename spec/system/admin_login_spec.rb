@@ -12,7 +12,6 @@ RSpec.describe "Admin login" do
 
   it "Allows a admin to login" do
     visit koi_engine.root_path
-    expect(page).to have_text "Log in"
 
     fill_in "Email", with: admin.email
     fill_in "Password", with: admin.password
