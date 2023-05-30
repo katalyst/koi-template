@@ -90,7 +90,14 @@ def setup_dartsass
 end
 
 def setup_database
-  template("config/database.yml", force: true)
+  case options[:database]
+  when "postgresql"
+    template("config/database.postgres.yml", "config/database.yml", force: true)
+  when "sqlite3"
+    copy_file("config/database.sqlite.yml", "config/database.yml", force: true)
+  else
+    raise "Unsupported database: #{options[:database]}"
+  end
 end
 
 def setup_seeds
