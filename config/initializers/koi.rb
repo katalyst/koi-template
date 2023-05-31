@@ -1,5 +1,5 @@
 Koi::Menu.priority = {
-  "Navigations"  => "/admin/navigation",
+  "Navigations" => "/admin/navigation",
 }
 
 Koi::Menu.advanced = {

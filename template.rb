@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 fail("Rails 7.0.0 or greater is required") if Rails.version <= "7"
 
 def apply_template!
@@ -51,21 +53,29 @@ end
 #
 # Based on https://github.com/mattbrictson/rails-template/blob/main/template.rb
 def add_template_repository_to_source_path
-  if __FILE__ =~ %r{\Ahttps?://}
+  if __FILE__.match?(%r{\Ahttps?://})
     require "tmpdir"
-    source_paths.unshift(tempdir = Dir.mktmpdir("koi-template-"))
-    at_exit { FileUtils.remove_entry(tempdir) }
+    template_root = Dir.mktmpdir("koi-template-")
+    at_exit { FileUtils.remove_entry(template_root) }
     git clone: [
-                 "--quiet",
-                 "https://github.com/katalyst/koi-template.git",
-                 tempdir
-               ].map(&:shellescape).join(" ")
+      "--quiet",
+      "https://github.com/katalyst/koi-template.git",
+      template_root,
+    ].map(&:shellescape).join(" ")
 
     if (branch = __FILE__[%r{koi-template/(.+)/template.rb}, 1])
-      Dir.chdir(tempdir) { git checkout: branch }
+      Dir.chdir(template_root) { git checkout: branch }
     end
   else
-    source_paths.unshift(File.dirname(__FILE__))
+    template_root = __dir__
+  end
+
+  source_paths.unshift(template_root)
+
+  # Load helpers from the `templates/helpers` directory
+  Pathname.new(template_root).glob("templates/helpers/*.rb").each do |helper|
+    require(helper)
+    extend Pathname.new(helper).basename.sub_ext("").to_s.camelize.constantize
   end
 end
 
@@ -86,16 +96,15 @@ def setup_rspec
 end
 
 def setup_basic_auth
-
-  add_gem_above_groups("katalyst-basic-auth", github: "katalyst/katalyst-basic-auth")
+  gem("katalyst-basic-auth", github: "katalyst/katalyst-basic-auth")
 end
 
 def setup_healthcheck
-  add_gem_above_groups("katalyst-healthcheck")
+  gem("katalyst-healthcheck")
 end
 
 def setup_sentry
-  add_gem_above_groups("sentry-rails")
+  gem("sentry-rails")
 
   template("config/initializers/sentry.rb")
 end
@@ -162,7 +171,7 @@ def override_default_files
 end
 
 def cleanup_gemfile
-  gsub_file("Gemfile", /^\s*#\s*.*\n/, '')
+  gsub_file("Gemfile", /^\s*#\s*.*\n/, "")
   unpin_gem("pg")
   unpin_gem("puma")
   unpin_gem("rails")
@@ -189,7 +198,7 @@ end
 
 def configure_git
   get("https://raw.githubusercontent.com/github/gitignore/main/Rails.gitignore", ".gitignore")
-  gsub_file(".gitignore", /^\s*#\s*TODO.*\n/, '')
+  gsub_file(".gitignore", /^\s*#\s*TODO.*\n/, "")
   append_to_file(".gitignore", "app/assets/builds/*\n!/app/assets/builds/.keep")
 
   unless ENV["CI"]
@@ -197,58 +206,6 @@ def configure_git
     git(add: "-A")
     git(commit: "-m 'Initial commit'")
     git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git")
-  end
-end
-
-def file_exists?(file)
-  File.exist?(file)
-end
-
-def file_contains?(file, contains)
-  return false unless file_exists?(file)
-
-  File.foreach(file).any? { |line| line.include?(contains) }
-end
-
-def add_gem_above_groups(gem, options = {})
-  if options.any?
-    insert_into_file("Gemfile", "gem '#{gem}', #{options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")}\n", :before => "\ngroup :development, :test do")
-  else
-    insert_into_file("Gemfile", "gem '#{gem}'\n", :before => "\ngroup :development, :test do")
-  end
-end
-
-def add_into_dev_test_gem_group(gem, options = {})
-  if file_contains?("Gemfile", "group :development, :test do")
-    if options.any?
-      insert_into_file("Gemfile", "gem '#{gem}', #{options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")}\n", :after => "group :development, :test do\n")
-    else
-      insert_into_file("Gemfile", "gem '#{gem}'\n", :after => "group :development, :test do\n")
-    end
-  else
-    gem_group :development, :test do
-      gem gem, **options
-    end
-  end
-end
-
-def add_into_test_gem_group(gem, options = {})
-  if file_contains?("Gemfile", "group :test do")
-    if options.any?
-      insert_into_file("Gemfile", "gem '#{gem}', #{options.map { |k, v| "#{k}: #{v.inspect}" }.join(", ")}\n", :after => "group :test do\n")
-    else
-      insert_into_file("Gemfile", "gem '#{gem}'\n", :after => "group :test do\n")
-    end
-  else
-    gem_group :test do
-      gem gem, **options
-    end
-  end
-end
-
-def unpin_gem(gem)
-  if file_contains?("Gemfile", "gem \"#{gem}\"")
-    gsub_file("Gemfile", /gem \"#{gem}\"+.+\n/, "gem \"#{gem}\"\n")
   end
 end
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
-add_into_dev_test_gem_group("rubocop-katalyst", require: false)
+gem_group(:development, :test) do
+  gem("rubocop-katalyst", require: false)
+end
 
 template("rubocop.yml", ".rubocop.yml")

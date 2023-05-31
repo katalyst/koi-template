@@ -2,13 +2,17 @@
 
 return if file_contains?("Gemfile", "rspec-rails")
 
-add_into_dev_test_gem_group("factory_bot_rails")
-add_into_dev_test_gem_group("faker")
-add_into_dev_test_gem_group("rspec-rails")
-add_into_dev_test_gem_group("shoulda-matchers")
+gem_group(:development, :test) do
+  gem("factory_bot_rails")
+  gem("faker")
+  gem("rspec-rails")
+  gem("shoulda-matchers")
+end
 
-add_into_test_gem_group("capybara")
-add_into_test_gem_group("cuprite")
-add_into_test_gem_group("rack_session_access")
-add_into_test_gem_group("rails-controller-testing")
-add_into_test_gem_group("webmock")
+gem_group(:test) do
+  gem("capybara")
+  gem("cuprite")
+  gem("rack_session_access")
+  gem("rails-controller-testing")
+  gem("webmock")
+end

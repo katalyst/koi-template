@@ -1,0 +1,11 @@
+require:
+  - rubocop-katalyst
+
+AllCops:
+  TargetRubyVersion: 3.1
+
+Lint/EmptyFile:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
