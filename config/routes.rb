@@ -4,6 +4,4 @@ Rails.application.routes.draw do
   resource :homepage, only: %i[show]
 
   root "homepages#show"
-
-  mount Koi::Engine => "/admin", as: "koi_engine"
 end

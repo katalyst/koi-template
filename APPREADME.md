@@ -21,7 +21,7 @@ instance using `bin/ecs-ssh`.
 require "securerandom"
 password = SecureRandom.base58(16)
 puts "Your temporary password is #{password}"
-AdminUser.create(first_name: "First", last_name: "Last", email: "first.last@katalyst.com.au", password:)
+Admin::User.create(name: `id -F`.strip, email: "#{ENV['USER']}@katalyst.com.au", password:)
 ```
 
 If your username matches your Katalyst email address then when you're running
