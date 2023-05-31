@@ -192,10 +192,12 @@ def configure_git
   gsub_file(".gitignore", /^\s*#\s*TODO.*\n/, '')
   append_to_file(".gitignore", "app/assets/builds/*\n!/app/assets/builds/.keep")
 
-  git(:init)
-  git(add: "-A")
-  git(commit: "-m 'Initial commit'")
-  git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git")
+  unless ENV["CI"]
+    git(:init)
+    git(add: "-A")
+    git(commit: "-m 'Initial commit'")
+    git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git")
+  end
 end
 
 def file_exists?(file)
