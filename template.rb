@@ -37,7 +37,8 @@ def apply_template!
 
     run("rake db:prepare db:migrate")
 
-    run("rake format || true")
+    run("rubocop -A || true")
+    run("rake autocorrect || true")
     run("bundle lock --add-platform aarch64-linux")
     run("bundle lock --add-platform x86_64-linux")
 
