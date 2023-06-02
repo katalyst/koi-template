@@ -41,3 +41,15 @@ jobs:
           DATABASE_URL: postgres://postgres:postgres@localhost/<%= @app_name %>_test
         run: |
           bundle exec rake
+      - name: Archive screenshots
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: rspec-screenshots
+          path: tmp/screenshots
+      - name: Archive capybara
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: rspec-capybara
+          path: tmp/capybara

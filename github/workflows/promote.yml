@@ -1,0 +1,48 @@
+# This workflow will run when a production release is published.
+name: Promote a release to production
+
+on:
+  release:
+    types:
+      - released
+concurrency: continuous-deployment
+env:
+  AWS_DEFAULT_REGION: ap-southeast-2
+  ECR: ${{ vars.ECR_URL }}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+      - name: Get image manifest
+        run: |
+          echo "MANIFEST<<EOF" >> $GITHUB_ENV
+          aws ecr batch-get-image \
+            --repository-name ${{ vars.ECR_NAME }} \
+            --image-ids "imageTag=$(echo $GITHUB_REF_NAME | sed 's|/|-|g')" \
+            --region ${{ env.AWS_DEFAULT_REGION }} \
+            --query images[].imageManifest \
+            --output text >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Promote image manifest to production
+        run: >-
+          aws ecr put-image
+          --repository-name ${{ vars.ECR_NAME }}
+          --image-tag "$(echo $GITHUB_REF_NAME | sed 's|release/|prod-release-|g')"
+          --image-tag production
+          --image-manifest "$MANIFEST"
+          --region ${{ env.AWS_DEFAULT_REGION }}
+          --output json
+      - name: Redeploy production containers
+        run: >-
+          aws ecs update-service
+          --cluster ${{ vars.ecs_cluster }}
+          --service ${{ vars.ecs_service }}
+          --force-new-deployment
+          --region ${{ env.AWS_DEFAULT_REGION }}
