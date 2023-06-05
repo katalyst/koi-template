@@ -13,11 +13,5 @@ module Admin
     helper Katalyst::GOVUK::Formbuilder::Frontend
     helper Koi::ApplicationHelper
     helper Koi::DefinitionListHelper
-
-    def sort_and_paginate(records)
-      @sort, records = table_sort(records)
-      @pagy, records = pagy(records)
-      records
-    end
   end
 end

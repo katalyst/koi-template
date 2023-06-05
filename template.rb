@@ -156,6 +156,7 @@ def setup_homepage
 end
 
 def setup_routes
+  directory("config/routes")
   template("config/routes.rb", force: true)
 end
 
