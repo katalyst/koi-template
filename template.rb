@@ -157,6 +157,7 @@ end
 
 def setup_routes
   template("config/routes.rb", force: true)
+  template("config/initializers/default_url_options.rb")
 end
 
 def setup_stylesheets
@@ -187,6 +188,26 @@ def install_koi
   run("rails katalyst_content:install:migrations")
   run("rails katalyst_navigation:install:migrations")
   run("rails action_text:install")
+  install_active_storage
+end
+
+def install_active_storage
+  run("rails active_storage:install")
+
+  # setup active_storage services
+  copy_file("config/storage.yml")
+  gsub_file("config/storage.yml", "[DEFAULT_BUCKET_ID]", "katalyst-#{@app_name}-staging-assets")
+
+  # setup active_storage service
+  application(nil, env: "development") do
+    "config.active_storage.service = :local"
+  end
+  application(nil, env: "test") do
+    "config.active_storage.service = :test"
+  end
+  application(nil, env: %w[production staging]) do
+    "config.active_storage.service = :s3"
+  end
 end
 
 def install_dartsass
