@@ -20,9 +20,23 @@ root.glob("app/{controllers}/admin/**/*.rb").sort.each do |f|
   copy_file(f.relative_path_from(root))
 end
 
-# ensure load paths are correct for engines
-insert_into_file("config/application.rb", "\n\tconfig.railties_order = [:main_app, Koi::Engine, :all]\n",
-                 after: "config.generators.system_tests = nil\n")
+# update application.rb configuration with Koi defaults
+gsub_file("config/application.rb",
+          /^\s+# Don't generate system test files.\n\s+config.generators.system_tests = nil\n/) do
+  <<-RUBY
+
+    # Configure koi-style generators
+    config.generators do |g|
+      g.assets(false)
+      g.helper(false)
+      g.stylesheets(false)
+      g.test_framework(:rspec)
+    end
+
+    # Ensure that Koi loads immediately after main app and before all other engines
+    config.railties_order = [:main_app, Koi::Engine, :all]
+  RUBY
+end
 
 insert_into_file("app/controllers/application_controller.rb", "\n\tinclude Katalyst::Navigation::HasNavigation\n",
                  after: "class ApplicationController < ActionController::Base\n")
