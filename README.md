@@ -20,7 +20,7 @@ This project provides a base project following Katalyst best practices. It confi
 * Create a new Git repo for your newly created project
 
 ### Setup
-```
+```shell
 rails new sprint0 -d postgresql \
             --skip-action-cable \
             --skip-action-mailer \
@@ -56,3 +56,9 @@ rails new sprint0 -d postgresql \
 ## Post-requisites
 
 Support for Sentry is included, but need to setup Sentry separately.
+
+## Update an existing Rails project
+
+```shell
+rails app:template LOCATION=https://raw.githubusercontent.com/katalyst/koi-template/main/template.rb
+```
