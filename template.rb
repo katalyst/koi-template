@@ -21,6 +21,7 @@ def apply_template!
   setup_homepage
   setup_release_tag
   setup_routes
+  setup_ecs
 
   cleanup_gemfile
 
@@ -209,6 +210,10 @@ def configure_git
     git(commit: "-m 'Initial commit'")
     git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git")
   end
+end
+
+def setup_ecs
+  template("config/ecs.env")
 end
 
 apply_template!

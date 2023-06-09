@@ -1,46 +1,32 @@
 #!/bin/bash
 
+source "$(dirname "$0")/../config/ecs.env"
+
 set -eu
 set -o pipefail
 
-ENVIRONMENT="staging"
-KNOWN_ENVIRONMENTS=("staging" "production")
-CLUSTER="ecs-katalyst"
-REGION="ap-southeast-2"
 TASK=""
 COMMAND="/bin/bash"
-LIST_ONLY=""
+DRY_RUN=false
 
-while getopts e:t:c:l option
+while getopts e:t:c:n option
 do
     case "${option}" in
         e) ENVIRONMENT=${OPTARG};;
         t) TASK=${OPTARG};;
         c) COMMAND="${OPTARG}";;
-        l) LIST_ONLY=1;;
+        n) DRY_RUN=true;;
         *) exit 1;;
     esac
 done
 
-match=0
-for environ in "${KNOWN_ENVIRONMENTS[@]}"; do
-    if [[ $environ = "$ENVIRONMENT" ]]; then
-        match=1
-        break
-    fi
-done
-if [[ $match = 0 ]]; then
-    echo "$ENVIRONMENT is not a known katalyst environment"
-    exit 1
-fi
-
 if [ -z "${TASK}" ]; then
-    TASK="$(aws ecs list-tasks --cluster "$CLUSTER" --service-name "${PROJECT}-${ENVIRONMENT}" --region "$REGION" --output json | jq -r .taskArns[0])"
+    TASK="$(aws ecs list-tasks --cluster "$CLUSTER" --service-name "${SERVICE}-${ENVIRONMENT}" --region "$REGION" --output json | jq -r .taskArns[0])"
 fi
 
-if [ ! -z "${LIST_ONLY}" ]; then
-    echo "Task: ${TASK}"
+if [ "${DRY_RUN}" == true ]; then
+    echo aws ecs execute-command --cluster "$CLUSTER" --region "$REGION" --container rails --task "$TASK" --interactive --command "$COMMAND"
     exit 0
 fi
 
-exec aws ecs execute-command --cluster "$CLUSTER" --region "$REGION" --container "${CONTAINER}" --task "$TASK" --interactive --command "$COMMAND"
+exec aws ecs execute-command --cluster "$CLUSTER" --region "$REGION" --container rails --task "$TASK" --interactive --command "$COMMAND"

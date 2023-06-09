@@ -1,19 +1,13 @@
 #!/bin/bash
 
+source "$(dirname "$0")/../config/ecs.env"
+
 set -eu
 set -o pipefail
 
-CLUSTER="ecs-katalyst"
-ENVIRONMENT="staging"
-SERVICE="<%= @app_name %>"
 COMMAND="/bin/bash"
 
-function task_status {
-  TASK_ARN="$1"
-  aws ecs describe-tasks --cluster "$CLUSTER" --region "ap-southeast-2" --tasks "$TASK_ARN" --query tasks[].containers[].managedAgents[].lastStatus --output text
-}
-
-while getopts b:e:r:c option
+while getopts e: option
 do
     case "${option}" in
         e) ENVIRONMENT=${OPTARG};;
@@ -21,31 +15,58 @@ do
     esac
 done
 
-TASK_ARN=$(aws ecs run-task \
-  --cluster "$CLUSTER" \
-  --enable-execute-command \
-  --task-definition "$SERVICE-$ENVIRONMENT-maintenance" \
-  --network-configuration "awsvpcConfiguration={subnets=[subnet-0d11b1a1454181d4c,subnet-05bcadcac2d4e5979,subnet-054748b05595d8621],securityGroups=[sg-02793939997cd095d],assignPublicIp=ENABLED}" \
-  --overrides '{ "containerOverrides": [ { "name": "maintenance", "command": ["/usr/bin/tail", "-f", "/dev/null"] } ] }' \
-  --query tasks[].taskArn --output text) || true
+function task_status {
+  TASK_ARN="$1"
+  aws ecs describe-tasks --cluster "$CLUSTER" \
+    --region "$REGION" \
+    --tasks "$TASK_ARN" \
+    --query "tasks[].containers[].managedAgents[].lastStatus" \
+    --output text
+}
+
+function network_configuration {
+  aws ecs describe-services \
+    --cluster "$CLUSTER" \
+    --services "$SERVICE-$ENVIRONMENT" \
+    --query "services[].deployments[].networkConfiguration[]" \
+    --output json | jq -c ".[]"
+}
+
+function run_task {
+  aws ecs run-task \
+    --cluster "$CLUSTER" \
+    --enable-execute-command \
+    --task-definition "$SERVICE-$ENVIRONMENT-maintenance" \
+    --network-configuration "$(network_configuration)" \
+    --overrides '{ "containerOverrides": [ { "name": "maintenance", "command": ["/usr/bin/tail", "-f", "/dev/null"] } ] }' \
+    --query tasks[].taskArn --output text
+}
+
+TASK_ARN=$(run_task) || true
 
 TASK_ID=$(echo "$TASK_ARN" | cut -d '/' -f3)
-echo "Launching task, please stand by for interactive shell"
+echo "Launching ${TASK_ID}, please stand by for interactive shell"
 
 function cleanup {
-  aws ecs stop-task --cluster "$CLUSTER" --task "$TASK_ID" --region "ap-southeast-2" > /dev/null
+  aws ecs stop-task --cluster "$CLUSTER" --task "$TASK_ID" --region "$REGION" > /dev/null
   echo "Task stopped (${TASK_ID})"
 }
 
+# Trap ensures that when the shell exits, the task will be destroyed
 trap cleanup EXIT
 
 echo -n "Container launching"
-while [ "$(task_status "$TASK_ID")" != "RUNNING" ]
-do
+while [ "$(task_status "$TASK_ID")" != "RUNNING" ]; do
   sleep 1
   echo -n "."
 done
 
 echo ""
 
-aws ecs execute-command --cluster "$CLUSTER" --region "ap-southeast-2" --container maintenance --task "$TASK_ID" --interactive --command "$COMMAND"
+aws ecs execute-command \
+  --cluster "$CLUSTER" \
+  --region "$REGION" \
+  --container "maintenance" \
+  --task "$TASK_ID" \
+  --interactive \
+  --command "$COMMAND"
