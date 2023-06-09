@@ -7,17 +7,17 @@ ENVIRONMENT="staging"
 KNOWN_ENVIRONMENTS=("staging" "production")
 CLUSTER="ecs-katalyst"
 REGION="ap-southeast-2"
-CONTAINER="<%= @app_name %>"
-PROJECT="katalyst-${CONTAINER}"
 TASK=""
 COMMAND="/bin/bash"
+LIST_ONLY=""
 
-while getopts e:t:c: option
+while getopts e:t:c:l option
 do
     case "${option}" in
         e) ENVIRONMENT=${OPTARG};;
         t) TASK=${OPTARG};;
         c) COMMAND="${OPTARG}";;
+        l) LIST_ONLY=1;;
         *) exit 1;;
     esac
 done
@@ -36,6 +36,11 @@ fi
 
 if [ -z "${TASK}" ]; then
     TASK="$(aws ecs list-tasks --cluster "$CLUSTER" --service-name "${PROJECT}-${ENVIRONMENT}" --region "$REGION" --output json | jq -r .taskArns[0])"
+fi
+
+if [ ! -z "${LIST_ONLY}" ]; then
+    echo "Task: ${TASK}"
+    exit 0
 fi
 
 exec aws ecs execute-command --cluster "$CLUSTER" --region "$REGION" --container "${CONTAINER}" --task "$TASK" --interactive --command "$COMMAND"
