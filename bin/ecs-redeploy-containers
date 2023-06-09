@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -eu
+set -o pipefail
+
+CLUSTER="ecs-katalyst"
+ENVIRONMENT="staging"
+SERVICE="<%= @app_name %>"
+
+while getopts e: option
+do
+    case "${option}" in
+        e) ENVIRONMENT=${OPTARG};;
+    esac
+done
+
+echo "Forcing redeployment on running containers in $SERVICE-$ENVIRONMENT"
+aws ecs update-service --cluster "$CLUSTER" --service "$SERVICE-$ENVIRONMENT" --force-new-deployment --region ap-southeast-2
