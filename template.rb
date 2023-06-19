@@ -204,12 +204,16 @@ def configure_git
   gsub_file(".gitignore", /^\s*#\s*TODO.*\n/, "")
   append_to_file(".gitignore", "app/assets/builds/*\n!/app/assets/builds/.keep")
 
-  unless ENV["CI"]
-    git(:init)
-    git(add: "-A")
-    git(commit: "-m 'Initial commit'")
-    git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git")
+  if ENV["CI"]
+    git(config: "--global user.name Katalyst CI")
+    git(config: "--global user.email devs@katalyst.com.au")
   end
+
+  git(:init)
+  git(add: "-A")
+  git(commit: "-m 'Initial commit'")
+
+  git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git") unless ENV["CI"]
 end
 
 def setup_ecs
