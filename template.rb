@@ -15,6 +15,7 @@ def apply_template!
   setup_dartsass
   setup_database
   setup_seeds
+  setup_foreman
   setup_rakefile
   setup_timezone
   setup_koi
@@ -132,6 +133,12 @@ end
 
 def setup_seeds
   template("db/seeds.rb", force: true)
+end
+
+def setup_foreman
+  gem_group(:development) do
+    gem("foreman", require: false)
+  end
 end
 
 def setup_rakefile
