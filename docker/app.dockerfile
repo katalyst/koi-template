@@ -1,18 +1,20 @@
 # syntax=docker/dockerfile:1.4
 
 # Precompile assets in a separate container to avoid having to install nodejs in the final container
-FROM public.ecr.aws/docker/library/ruby:3.2-slim AS build
+FROM public.ecr.aws/docker/library/ruby:3.2 AS build
 
 # Install OS packages
 
-ENV BUILD_PACKAGES="build-essential git curl openssh-client"
+ENV BUILD_PACKAGES="build-essential git curl nodejs openssh-client"
 ENV DEV_PACKAGES="libcurl4-openssl-dev libpq-dev"
 ENV RUBY_PACKAGES="shared-mime-info libvips"
+ENV DEBIAN_FRONTEND="noninteractive"
 
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $BUILD_PACKAGES $DEV_PACKAGES $RUBY_PACKAGES && \
-    curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nodejs && \
+RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor | tee /usr/share/keyrings/nodesource.gpg >/dev/null && \
+    echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x bookworm main" > /etc/apt/sources.list.d/nodesource.list && \
+    echo "deb-src [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x bookworm main" >> /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends $BUILD_PACKAGES $DEV_PACKAGES $RUBY_PACKAGES && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
