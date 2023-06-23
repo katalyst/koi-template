@@ -1,0 +1,34 @@
+#!/bin/bash
+
+source "$(dirname "$0")/../.config/ecs.env"
+
+set -eu
+set -o pipefail
+
+while getopts e: option
+do
+    case "${option}" in
+        e) ENVIRONMENT=${OPTARG};;
+        *) exit 1;;
+    esac
+done
+
+function network_configuration {
+  aws ecs describe-services \
+    --cluster "$CLUSTER" \
+    --services "$SERVICE-$ENVIRONMENT" \
+    --query "services[].deployments[].networkConfiguration[]" \
+    --output json | jq -c ".[0]"
+}
+
+function run_task {
+  aws ecs run-task \
+    --cluster "$CLUSTER" \
+    --enable-execute-command \
+    --task-definition "$SERVICE-$ENVIRONMENT-maintenance" \
+    --network-configuration "$(network_configuration)" \
+    --query tasks[].taskArn --output text
+}
+
+TASK_ARN=$(run_task) || true
+echo "Creating snapshot of $ENVIRONMENT database using task $TASK_ARN"
