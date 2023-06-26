@@ -29,7 +29,7 @@ function network_configuration {
     --cluster "$CLUSTER" \
     --services "$SERVICE-$ENVIRONMENT" \
     --query "services[].deployments[].networkConfiguration[]" \
-    --output json | jq -c ".[]" | head -n 1
+    --output json | jq -c ".[0]"
 }
 
 function run_task {
