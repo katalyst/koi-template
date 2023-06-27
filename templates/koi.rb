@@ -2,6 +2,14 @@
 
 gem("koi", github: "katalyst/koi")
 
+# setup aws s3 gem
+gem "aws-sdk-s3", require: false
+
+# setup image processing gem for variants etc
+gem "image_processing"
+
+gem "active_storage_validations"
+
 # koi requires action_text
 uncomment_lines("config/application.rb", /action_text/)
 uncomment_lines("config/application.rb", /action_mailer/)
@@ -12,8 +20,6 @@ append_file("db/seeds.rb", "Koi::Engine.load_seed")
 
 # adds navigation items to admin menu
 template("config/initializers/koi.rb")
-
-copy_file("config/storage.yml")
 
 root = Pathname.new(__dir__).join("..")
 root.glob("app/{controllers}/admin/**/*.rb").sort.each do |f|

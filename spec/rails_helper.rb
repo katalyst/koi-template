@@ -10,7 +10,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require "rspec/rails"
 # require "webmock/rspec"
 require "shoulda/matchers"
-# require "active_storage_validations/matchers"
+require "active_storage_validations/matchers"
 
 WebMock.disable_net_connect!(allow_localhost: true)
 
@@ -30,7 +30,7 @@ RSpec.configure do |config|
   config.infer_spec_type_from_file_location!
   config.use_transactional_fixtures = true
 
-  # config.include ActiveStorageValidations::Matchers
+  config.include ActiveStorageValidations::Matchers
   config.include FactoryBot::Syntax::Methods
   # config.include Koi::Controller::HasAdminUsers::Test::ViewHelper, type: :view
   # config.include SystemHelper, type: :system
