@@ -14,6 +14,7 @@ def apply_template!
   setup_github_actions
   setup_dartsass
   setup_database
+  setup_search
   setup_seeds
   setup_rakefile
   setup_timezone
@@ -127,6 +128,15 @@ def setup_database
     copy_file("config/database.sqlite.yml", "config/database.yml", force: true)
   else
     raise "Unsupported database: #{options[:database]}"
+  end
+end
+
+def setup_search
+  case options[:database]
+  when "postgresql"
+    gem "pg_search"
+  else
+    nil
   end
 end
 
