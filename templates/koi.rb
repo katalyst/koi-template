@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-gem("koi", github: "katalyst/koi")
+gem("katalyst-koi")
 
 # koi requires action_text
 uncomment_lines("config/application.rb", /action_text/)

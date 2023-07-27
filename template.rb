@@ -100,7 +100,7 @@ def setup_rspec
 end
 
 def setup_basic_auth
-  gem("katalyst-basic-auth", github: "katalyst/katalyst-basic-auth")
+  gem("katalyst-basic-auth")
 end
 
 def setup_healthcheck
