@@ -20,4 +20,6 @@ RSpec.configure do |config|
   config.before(:all, type: :system) do
     driven_by Capybara.javascript_driver
   end
+
+  config.include Capybara::RSpecMatchers, type: :request
 end
