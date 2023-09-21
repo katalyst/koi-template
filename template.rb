@@ -33,6 +33,7 @@ def apply_template!
     setup_stylesheets
 
     install_dartsass
+    install_active_storage
     install_koi
 
     remove_unused_files
@@ -199,6 +200,23 @@ end
 
 def setup_release_tag
   apply "templates/release-tag.rb"
+end
+
+def install_active_storage
+  run("rails active_storage:install")
+  {
+    development: :local,
+    test:        :test,
+    staging:     :s3,
+    production:  :s3,
+  }.each do |env, service|
+    insert_into_file("config/environments/#{env}.rb", before: /end\Z/) do
+      ["",
+       "# Store uploaded files on the local file system",
+       "config.active_storage.service = #{service.inspect}\n",
+      ].join("\n  ")
+    end
+  end
 end
 
 def install_koi
