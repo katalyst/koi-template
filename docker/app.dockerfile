@@ -28,7 +28,7 @@ COPY .ruby-version Gemfile* ./
 RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 # Bundle configuration
-ENV BUNDLER_VERSION="2.4.13"
+ENV BUNDLER_VERSION="2.4.19"
 ENV BUNDLE_DEPLOYMENT=true
 ENV BUNDLE_DISABLE_VERSION_CHECK=true
 ENV BUNDLE_IGNORE_MESSAGES=true
@@ -82,7 +82,7 @@ COPY --link docker/etc/nginx.conf /etc/nginx/nginx.conf
 RUN echo $APPLICATION_VERSION > VERSION && echo $APPLICATION_REVISION > REVISION
 
 # Bundle configuration
-ENV BUNDLER_VERSION="2.4.13"
+ENV BUNDLER_VERSION="2.4.19"
 ENV BUNDLE_DEPLOYMENT=true
 ENV BUNDLE_DISABLE_VERSION_CHECK=true
 ENV BUNDLE_WITHOUT="development:test"

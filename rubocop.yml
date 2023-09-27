@@ -14,7 +14,7 @@ AllCops:
     - node_modules/**/*
     - vendor/bundle/**/*
   NewCops: enable
-  TargetRubyVersion: 3.1
+  TargetRubyVersion: 3.2
 RSpec/MultipleMemoizedHelpers:
   Max: 25
 Bundler/OrderedGems:
