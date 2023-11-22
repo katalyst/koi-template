@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+
+require File.expand_path("../../config/environment", __FILE__)
+require "optparse"
+
+user = Admin::User.new
+user.password = SecureRandom.base58(16)
+
+parser = OptionParser.new do |parser|
+  parser.banner = "Usage: admin-adduser [options]"
+
+  parser.on("-e", "--email EMAIL", "User email address") do |v|
+    user.email = v
+  end
+  parser.on("-n", "--name NAME", "User name") do |v|
+    user.name = v
+  end
+  parser.on("-h", "--help", "Prints this help") do
+    puts parser
+    exit
+  end
+end
+parser.parse!
+
+def fatal(message, show_usage: nil)
+  puts "ERROR: #{message}"
+  puts "\n#{show_usage}" if show_usage
+  exit 1
+end
+
+if Rails.env.local? && user.email.blank? && user.name.blank?
+  user.email = "#{ENV['USER']}@katalyst.com.au"
+  user.name  = `id -F`.strip
+end
+
+fatal("Name is required", show_usage: parser) if user.name.blank?
+fatal("Email is required", show_usage: parser) if user.email.blank?
+fatal("Admin user #{user.email} already exists") if Admin::User.exists?(email: user.email)
+fatal(user.errors.full_messages.to_sentence) unless user.valid?
+
+user.save!
+puts "Created admin user #{user.email} (#{user.name})"
+puts "Password is #{user.password}"
