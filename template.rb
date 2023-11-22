@@ -115,6 +115,8 @@ def setup_sentry
 end
 
 def setup_github_actions
+  gem("aws-sdk-s3")
+
   directory("github", ".github")
 end
 

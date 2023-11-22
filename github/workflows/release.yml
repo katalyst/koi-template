@@ -10,6 +10,7 @@ env:
   AWS_DEFAULT_REGION: ap-southeast-2
   DOCKER_BUILDKIT: 1
   ECR: ${{ vars.ECR_URL }}
+  ASSETS_BUCKET: ${{ vars.ASSETS_BUCKET }}
 jobs:
   build:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
@@ -45,8 +46,11 @@ jobs:
           docker build
           --build-arg "APPLICATION_REVISION=${{ github.sha }}"
           --build-arg "APPLICATION_VERSION=${{ github.ref_name }}"
-          --build-arg "ASSET_HOST_PREFIX=${{ env.RELEASE_TAG }}"
           --build-arg BUILDKIT_INLINE_CACHE=1
+          --build-arg "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
+          --build-arg "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          --build-arg "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
+          --build-arg "S3_ASSETS_BUCKET=${ASSETS_BUCKET}"
           --build-arg "CDN_ASSET_PREFIX=${{ env.RELEASE_TAG }}"
           --tag "${ECR}:latest"
           --tag "${ECR}:${RELEASE_TAG}"
