@@ -15,7 +15,7 @@ RSpec.describe "Admin login" do
 
     fill_in "Email", with: admin.email
     fill_in "Password", with: admin.password
-    click_button "Log in"
+    click_on "Log in"
 
     expect(page).to have_current_path admin_dashboard_path
   end
