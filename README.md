@@ -28,6 +28,7 @@ rails new sprint0 -d postgresql \
             --skip-active-job \
             --skip-bootsnap \
             --skip-dev-gems \
+            --skip-docker \
             --skip-jbuilder \
             --skip-system-test \
             --skip-test \
@@ -38,16 +39,17 @@ rails new sprint0 -d postgresql \
 ```
 
  * subset of --minimal configuration
-   * --skip_action_cable: we're not providing support for action_cable
-   * --skip_action_mailer: we're not providing support for action_mailer
-   * --skip_action_mailbox: we're not providing support for action_mailbox
-   * --skip_active_job: we're not providing support for active_job
-   * --skip_bootsnap: we're not using bootsnap
-   * --skip_dev_gems: we do not need dev gems
-   * --skip_jbuilder: we do not need jbuilder
-   * --skip_system_test: we have set up system tests with rspec and cuprite 
+   * --skip-action-cable: we're not providing support for action_cable
+   * --skip-action-mailer: we're not providing support for action_mailer
+   * --skip-action-mailbox: we're not providing support for action_mailbox
+   * --skip-active-job: we're not providing support for active_job
+   * --skip-bootsnap: we're not using bootsnap
+   * --skip-dev-gems: we do not need dev gems
+   * --skip-jbuilder: we do not need jbuilder
+   * --skip-system-test: we have set up system tests with rspec and cuprite
  * --skip-test: we have set up rspec
  * --skip-bundle: we run bundle ourselves once gems are added
+ * --skip-docker: we generate our own docker configuration
  * --skip-git: we have set up git to point to Katalyst github
  * --skip-keeps: we only create the keep files we need
  * -a propshaft: we use propshaft for asset pipeline
