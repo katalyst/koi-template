@@ -5,7 +5,7 @@ Katalyst project for <%= @app_name %>.
 ## Development
 
 To run the rails server as well as watching for dartsass changes, the
-application provides a Procfile (ran through foreman) to use this, run `bin/dev`
+application provides a Procfile (run through foreman) to use this, run `bin/dev`
 then visit `localhost`.
 
 ### Admin
