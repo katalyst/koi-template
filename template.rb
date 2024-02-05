@@ -39,6 +39,8 @@ def apply_template!
     remove_unused_files
     override_default_files
 
+    setup_layout
+
     run("rake db:prepare db:migrate")
 
     run("rubocop -A || true")
@@ -167,6 +169,10 @@ end
 
 def setup_koi
   apply("templates/koi.rb")
+end
+
+def setup_layout
+  apply("templates/layout.rb")
 end
 
 def setup_homepage
