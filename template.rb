@@ -232,7 +232,7 @@ end
 
 def add_docker
   directory("docker", mode: :preserve)
-  template(".dockerignore")
+  template(".dockerignore", force: true)
 end
 
 def configure_git
