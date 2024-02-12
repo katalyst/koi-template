@@ -24,6 +24,7 @@ def apply_template!
   setup_release_tag
   setup_routes
   setup_ecs
+  setup_aws_s3
 
   cleanup_gemfile
 
@@ -260,6 +261,10 @@ end
 
 def setup_ecs
   template("config/ecs.env")
+end
+
+def setup_aws_s3
+  gem("aws-sdk-s3")
 end
 
 apply_template!
