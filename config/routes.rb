@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  get "/healthcheck", to: Katalyst::Healthcheck::Route.static(200, "OK")
+  get "up" => "rails/health#show", as: :rails_health_check
 
   draw :admin
 
