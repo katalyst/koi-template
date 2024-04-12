@@ -9,7 +9,6 @@ def apply_template!
   setup_rubocop
   setup_rspec
   setup_basic_auth
-  setup_healthcheck
   setup_sentry
   setup_github_actions
   setup_dartsass
@@ -106,10 +105,6 @@ end
 
 def setup_basic_auth
   gem("katalyst-basic-auth")
-end
-
-def setup_healthcheck
-  gem("katalyst-healthcheck")
 end
 
 def setup_sentry

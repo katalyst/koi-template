@@ -35,7 +35,6 @@ This project uses:
   - [RSpec](https://github.com/rspec/rspec-rails)
   - [Koi](https://github.com/katalyst/koi)
   - [Rubocop Katalyst](https://github.com/katalyst/rubocop-katalyst)
-  - [Katalyst Healthcheck](https://github.com/katalyst/katalyst-healthcheck)
   - [Katalyst BasicAuth](https://github.com/katalyst/katalyst-basic-auth)
   - [Sentry](https://sentry.io)
   - [Dartsass](https://github.com/rails/dartsass-rails)
