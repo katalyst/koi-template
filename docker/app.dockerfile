@@ -23,9 +23,6 @@ WORKDIR /app
 
 COPY .ruby-version Gemfile* ./
 
-# Download public key for github.com
-RUN mkdir -p -m 0600 ~/.ssh && ssh-keyscan github.com >> ~/.ssh/known_hosts
-
 # Bundle configuration
 ENV BUNDLER_VERSION="2.5.6"
 ENV BUNDLE_DEPLOYMENT=true
@@ -35,9 +32,8 @@ ENV BUNDLE_JOBS=4
 ENV BUNDLE_WITHOUT="development:test"
 
 # Install gems, forwarding your ssh agent for github authentication
-RUN --mount=type=ssh \
-  gem install bundler -v "${BUNDLER_VERSION}" && \
-  bundle install
+RUN gem install bundler -v "${BUNDLER_VERSION}" && \
+    bundle install
 
 # Compile assets
 
