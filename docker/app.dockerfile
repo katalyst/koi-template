@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 # Precompile assets in a separate container to avoid having to install nodejs in the final container
-FROM public.ecr.aws/docker/library/ruby:3.2 AS build
+FROM public.ecr.aws/docker/library/ruby:3.3 AS build
 
 # Install OS packages
 
@@ -50,7 +50,7 @@ RUN bin/rails assets:precompile && rm -rf tmp/*
 # END OF BUILD ##
 
 # Assemble all resources that will be used in the final container so they can be copied as a single layer
-FROM public.ecr.aws/docker/library/ruby:3.2-slim AS base
+FROM public.ecr.aws/docker/library/ruby:3.3-slim AS base
 
 WORKDIR /app
 COPY --link . .
@@ -59,7 +59,7 @@ COPY --from=build /app/vendor/bundle vendor/bundle
 RUN mkdir -p logs tmp/cache tmp/pids tmp/sockets
 
 # Build the app container that will run in production
-FROM public.ecr.aws/docker/library/ruby:3.2-slim AS app
+FROM public.ecr.aws/docker/library/ruby:3.3-slim AS app
 
 ARG PACKAGES="libcurl4-openssl-dev libpq-dev nginx shared-mime-info libvips"
 ARG APPLICATION_VERSION
