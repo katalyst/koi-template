@@ -30,8 +30,7 @@ def apply_template!
 
   after_bundle do
     setup_secrets
-    setup_staging
-    setup_log_config
+    setup_environments
     setup_stylesheets
 
     install_dartsass
@@ -160,10 +159,6 @@ def setup_rakefile
   template("Rakefile", force: true)
 end
 
-def setup_staging
-  template("config/environments/production.rb", "config/environments/staging.rb")
-end
-
 def setup_timezone
   uncomment_lines("config/application.rb", /config[.]time_zone/)
   gsub_file("config/application.rb", "Central Time (US & Canada)", "Adelaide")
@@ -174,34 +169,8 @@ def setup_logger
 end
 
 # Use rails_semantic_logger to log to stdout in JSON format
-def setup_log_config
-  %w[production staging].each do |env|
-    gsub_file("config/environments/#{env}.rb", /# Log to STDOUT by default.*\n/) do
-      <<~RUBY
-        # Configure logging as JSON to stdout
-          STDOUT.sync = true
-          config.rails_semantic_logger.add_file_appender = false
-          config.semantic_logger.add_appender(io: STDOUT, formatter: :json, application: "#{@app_name}")
-      RUBY
-    end
-
-    # Using multiline regex to match
-    # multiline regex ignores whitespace, so \s is used instead of actual spaces
-    gsub_file("config/environments/#{env}.rb",
-              /
-              config.logger\s=\sActiveSupport::Logger.new\(STDOUT\)\n
-              \s*.tap\s*{\s\|logger\|\slogger.formatter\s=\s::Logger::Formatter.new\s}\n
-              \s*.then\s{\s\|logger\|\sActiveSupport::TaggedLogging.new\(logger\)\s}\n
-            /x,
-              "")
-
-    gsub_file("config/environments/#{env}.rb",
-              /
-              \#\sPrepend\sall\slog\slines\swith\sthe\sfollowing\stags.\n
-              \s*config.log_tags\s=\s\[\s:request_id\s\]\n\n\s*
-            /x,
-              "")
-  end
+def setup_environments
+  apply "templates/environments.rb"
 end
 
 def setup_koi
