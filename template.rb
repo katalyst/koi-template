@@ -12,6 +12,7 @@ def apply_template!
   setup_sentry
   setup_github_actions
   setup_dartsass
+  setup_flipper
   setup_database
   setup_search
   setup_seeds
@@ -119,6 +120,10 @@ end
 
 def setup_dartsass
   apply "templates/dartsass.rb"
+end
+
+def setup_flipper
+  apply "templates/flipper.rb"
 end
 
 def setup_database
@@ -275,8 +280,12 @@ end
 
 def configure_git
   get("https://raw.githubusercontent.com/github/gitignore/main/Rails.gitignore", ".gitignore")
+
   gsub_file(".gitignore", /^\s*#\s*TODO.*\n/, "")
-  append_to_file(".gitignore", "app/assets/builds/*\n!/app/assets/builds/.keep")
+
+  append_to_file(".gitignore", "app/assets/builds/*")
+  append_to_file(".gitignore", "\n!/app/assets/builds/.keep")
+  append_to_file(".gitignore", "\n/public/admin/flipper")
 
   if ENV["CI"]
     git(config: "--global user.name Katalyst CI")
