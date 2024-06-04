@@ -47,6 +47,7 @@ jobs:
           --build-arg "APPLICATION_VERSION=${{ github.ref_name }}"
           --build-arg "ASSET_HOST_PREFIX=${{ env.RELEASE_TAG }}"
           --build-arg BUILDKIT_INLINE_CACHE=1
+          --build-arg "BUNDLER_VERSION=$(tail -n1 Gemfile.lock | xargs echo)"
           --build-arg "CDN_ASSET_PREFIX=${{ env.RELEASE_TAG }}"
           --tag "${ECR}:latest"
           --tag "${ECR}:${RELEASE_TAG}"
