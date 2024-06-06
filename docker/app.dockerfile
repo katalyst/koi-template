@@ -67,6 +67,9 @@ RUN if [ -n "$CDN_ASSET_PREFIX" ]; then \
 # Assemble all resources that will be used in the final container so they can be copied as a single layer
 FROM ruby:3.3-slim AS base
 
+ARG APPLICATION_VERSION
+ARG APPLICATION_REVISION
+
 WORKDIR /app
 COPY --link . .
 COPY --from=build /app/vendor/bundle vendor/bundle
@@ -80,8 +83,6 @@ RUN mkdir -p logs tmp/cache tmp/pids tmp/sockets
 FROM ruby:3.3-slim AS app
 
 ARG PACKAGES="libcurl4-openssl-dev libpq-dev nginx shared-mime-info libvips imagemagick"
-ARG APPLICATION_VERSION
-ARG APPLICATION_REVISION
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $PACKAGES && \
