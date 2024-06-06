@@ -1,25 +1,14 @@
 #!/usr/bin/env ruby
 
 # Use rails_semantic_logger to log to stdout in JSON format
-gsub_file("config/environments/production.rb", /^ *# Log to STDOUT by default.*\n/) do
+gsub_file("config/environments/production.rb", /^ +# Log to STDOUT by default\n(?: +[^# ].+\n)*/) do
   <<-RUBY
-  # Configure logging as JSON to stdout
+  # Configure logging as JSON to stdout.
   STDOUT.sync = true
   config.rails_semantic_logger.add_file_appender = false
   config.semantic_logger.add_appender(io: STDOUT, formatter: :json, application: "#{@app_name}")
   RUBY
 end
-
-# Remove default logging configuration.
-# Using multiline regex to match
-# multiline regex ignores whitespace, so \s is used instead of actual spaces
-gsub_file "config/environments/production.rb",
-          /
-            config.logger\s=\sActiveSupport::Logger.new\(STDOUT\)\n
-            \s*.tap\s*{\s\|logger\|\slogger.formatter\s=\s::Logger::Formatter.new\s}\n
-            \s*.then\s{\s\|logger\|\sActiveSupport::TaggedLogging.new\(logger\)\s}\n
-          /x,
-          ""
 
 # Configure logging tags
 gsub_file("config/environments/production.rb",
@@ -29,7 +18,7 @@ gsub_file("config/environments/production.rb",
     request_id: :request_id,
     ip:         :remote_ip,
     referrer:   :referrer,
-    user_agent: :user_agent, 
+    user_agent: :user_agent,
   }
   RUBY
 end
@@ -54,24 +43,31 @@ gsub_file "config/environments/production.rb",
           /#\s*(config.host_authorization =)/,
           '\1'
 
-gsub_file("config/environments/production.rb",
-          /^\s*# config.asset_host =.*\n/) do
+# Configure CDN assets
+insert_into_file "config/environments/production.rb",
+                 before: / *# Enable serving of images, stylesheets, and JavaScripts from an asset server.\n/ do
   <<-RUBY
-  # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  if ENV["CDN_ASSET_PREFIX"].present?
-    config.assets.prefix = "/#\{ENV["CDN_ASSET_PREFIX"]\}/assets"
-  else
-    config.assets.prefix = "/assets"
-  end
+  # Compile and serve assets from a release-specific directory.
+  config.assets.prefix = ["", ENV["CDN_ASSET_PREFIX"], "assets"].compact.join("/")
 
-  if ENV["CDN_ASSET_URI"].present?
-    config.asset_host = ENV["CDN_ASSET_URI"]
-  end
   RUBY
 end
+
+gsub_file "config/environments/production.rb",
+          /#\s*(config.asset_host =).*/,
+          '\1 ENV["CDN_ASSET_URI"] if ENV["CDN_ASSET_URI"].present?'
 
 # Copy production.rb to staging.rb
 production_file = File.expand_path("config/environments/production.rb", destination_root)
 staging_file    = File.expand_path("config/environments/staging.rb", destination_root)
 say_status :clone, relative_to_original_destination_root(staging_file), config.fetch(:verbose, true)
 FileUtils.cp(production_file, staging_file)
+
+# Configure tests to use the active-job :test adapter
+insert_into_file "config/environments/test.rb", after: /allow_forgery_protection = \w+\n/ do
+  <<-RUBY
+
+  # Use the test queue adapter which captures jobs on enqueue.
+  config.active_job.queue_adapter = :test
+  RUBY
+end

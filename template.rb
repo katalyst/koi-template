@@ -222,12 +222,9 @@ def install_active_storage
     staging:     :s3,
     production:  :s3,
   }.each do |env, service|
-    insert_into_file("config/environments/#{env}.rb", before: /end\Z/) do
-      ["",
-       "# Store uploaded files on the local file system",
-       "config.active_storage.service = #{service.inspect}\n",
-      ].join("\n  ")
-    end
+    gsub_file "config/environments/#{env}.rb",
+         /(config.active_storage.service =).+/,
+         "\\1 #{service.inspect}"
   end
 end
 
