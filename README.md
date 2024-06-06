@@ -24,8 +24,6 @@ rails new sprint0 -d postgresql \
             --skip-action-cable \
             --skip-action-mailer \
             --skip-action-mailbox \
-            --skip-active-job \
-            --skip-bootsnap \
             --skip-dev-gems \
             --skip-docker \
             --skip-jbuilder \
@@ -41,8 +39,6 @@ rails new sprint0 -d postgresql \
    * --skip-action-cable: we're not providing support for action_cable
    * --skip-action-mailer: we're not providing support for action_mailer
    * --skip-action-mailbox: we're not providing support for action_mailbox
-   * --skip-active-job: we're not providing support for active_job
-   * --skip-bootsnap: we're not using bootsnap
    * --skip-dev-gems: we do not need dev gems
    * --skip-jbuilder: we do not need jbuilder
    * --skip-system-test: we have set up system tests with rspec and cuprite
