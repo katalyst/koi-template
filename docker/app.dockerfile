@@ -81,7 +81,7 @@ RUN mkdir -p logs tmp/cache tmp/pids tmp/sockets
 # Build the app container that will run in production
 FROM ruby:3.3-slim AS app
 
-ARG PACKAGES="libcurl4-openssl-dev libpq-dev nginx shared-mime-info libvips imagemagick"
+ARG PACKAGES="libcurl4-openssl-dev libpq-dev nginx shared-mime-info libvips"
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $PACKAGES && \
