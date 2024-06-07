@@ -1,4 +1,4 @@
-# This workflow will run when a release tag is created pushed
+# This workflow will run when a release tag is created and pushed
 name: Release to AWS ECR and deploy to staging
 
 on:
@@ -7,6 +7,7 @@ on:
       - release/**
 concurrency: continuous-deployment
 env:
+  ASSETS_BUCKET: ${{ vars.ASSETS_BUCKET }}
   AWS_DEFAULT_REGION: ap-southeast-2
   DOCKER_BUILDKIT: 1
   ECR: ${{ vars.ECR_URL }}
@@ -22,7 +23,7 @@ jobs:
       - name: "Get docker sanitised release tag"
         run: echo RELEASE_TAG=$(echo $GITHUB_REF_NAME | sed 's|/|-|g') >> $GITHUB_ENV
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -39,16 +40,19 @@ jobs:
           aws ecr get-login-password --region ${{ env.AWS_DEFAULT_REGION }} |
           docker login --username AWS --password-stdin ${ECR}
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: "Build ${{ github.ref_name }}"
         run: >-
           docker build
           --build-arg "APPLICATION_REVISION=${{ github.sha }}"
           --build-arg "APPLICATION_VERSION=${{ github.ref_name }}"
-          --build-arg "ASSET_HOST_PREFIX=${{ env.RELEASE_TAG }}"
-          --build-arg BUILDKIT_INLINE_CACHE=1
+          --build-arg "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
+          --build-arg "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          --build-arg "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
+          --build-arg "BUILDKIT_INLINE_CACHE=1"
           --build-arg "BUNDLER_VERSION=$(tail -n1 Gemfile.lock | xargs echo)"
           --build-arg "CDN_ASSET_PREFIX=${{ env.RELEASE_TAG }}"
+          --build-arg "S3_ASSETS_BUCKET=${ASSETS_BUCKET}"
           --tag "${ECR}:latest"
           --tag "${ECR}:${RELEASE_TAG}"
           --file docker/app.dockerfile .
@@ -61,7 +65,7 @@ jobs:
     environment: staging
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -76,27 +80,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Generate Release Notes
-        uses: octokit/request-action@v2.2.0
-        id: get_release_notes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          route: POST /repos/${{ github.repository }}/releases/generate-notes
-          tag_name: ${{ github.ref_name }}
-          previous_tag_name: ${{ steps.last_release.outputs.tag }}
-      - name: Set Release content
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Create GitHub release
         run: |
-          echo "RELEASE_CONTENT<<EOF" >> $GITHUB_ENV
-          echo "${{ fromJson(steps.get_release_notes.outputs.data).body }}" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-      - name: Generate Release
-        uses: octokit/request-action@v2.2.0
+          gh release create "${{github.ref_name}}" --verify-tag --generate-notes --prerelease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          route: POST /repos/${{ github.repository }}/releases
-          name: ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
-          body: ${{ toJSON(env.RELEASE_CONTENT) }}
-          prerelease: true

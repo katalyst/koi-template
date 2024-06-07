@@ -9,7 +9,7 @@ on:
       - '*'
 jobs:
   lint_test:
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres
@@ -17,11 +17,6 @@ jobs:
           POSTGRES_PASSWORD: "postgres"
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -38,18 +33,14 @@ jobs:
         id: test
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost/<%= @app_name %>_test
+          DATABASE_URL: postgres://postgres:postgres@localhost/test
         run: |
           bundle exec rake
-      - name: Archive screenshots
-        if: success() || failure()
+      - name: Archive screenshots and logs
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: rspec-screenshots
-          path: tmp/screenshots
-      - name: Archive capybara
-        if: success() || failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: rspec-capybara
-          path: tmp/capybara
+          name: rspec-output
+          path: |
+            logs
+            tmp/capybara

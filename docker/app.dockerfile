@@ -28,9 +28,8 @@ ENV BUNDLE_JOBS=4
 ENV BUNDLE_WITHOUT="development:test"
 
 # Install gems, forwarding your ssh agent for github authentication
-RUN --mount=type=ssh \
-  gem install bundler -v "${BUNDLER_VERSION}" && \
-  bundle install
+RUN gem install bundler -v "${BUNDLER_VERSION}" && \
+    bundle install
 
 # Compile assets
 
