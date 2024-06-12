@@ -83,7 +83,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Create GitHub release
-        run: |
-          gh release create "${{github.ref_name}}" --verify-tag --generate-notes --prerelease
+        run: >-
+          gh release create "${{github.ref_name}}"
+          --verify-tag
+          --generate-notes
+          --notes-start-tag ${{ steps.last_release.outputs.tag }}
+          --prerelease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
