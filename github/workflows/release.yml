@@ -14,6 +14,8 @@ env:
 jobs:
   build:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    outputs:
+      previous_release_tag: ${{ steps.last_release.outputs.tag }}
     steps:
       - name: "Install AWS CLI" # not installed by default on buildjet images
         run: |
@@ -85,9 +87,9 @@ jobs:
       - name: Create GitHub release
         run: >-
           gh release create "${{github.ref_name}}"
-          --verify-tag
-          --generate-notes
-          --notes-start-tag ${{ steps.last_release.outputs.tag }}
-          --prerelease
+           --verify-tag
+           --generate-notes
+           --prerelease
+           --notes-start-tag ${{ needs.build.outputs.previous_release_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
