@@ -8,7 +8,15 @@ module Koi
           if component
             @table_component = component
           else
-            @table_component || Koi::Tables::TableComponent
+            @table_component || Koi::TableComponent
+          end
+        end
+
+        def default_summary_table_component(component = nil)
+          if component
+            @summary_table_component = component
+          else
+            @summary_table_component || Koi::SummaryTableComponent
           end
         end
       end
@@ -20,7 +28,7 @@ RSpec.configure do |config|
   config.prepend_before(type: :view) do |view|
     return unless view.id.include?("spec/views/admin")
 
-    self.controller.class.default_form_builder(Koi::FormBuilder)
-    self.controller.extend(Koi::Test::Views::AdminHelpers)
+    controller.class.default_form_builder(Koi::FormBuilder)
+    controller.extend(Koi::Test::Views::AdminHelpers)
   end
 end
