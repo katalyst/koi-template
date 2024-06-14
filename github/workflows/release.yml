@@ -14,8 +14,6 @@ env:
 jobs:
   build:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
-    outputs:
-      previous_release_tag: ${{ steps.last_release.outputs.tag }}
     steps:
       - name: "Install AWS CLI" # not installed by default on buildjet images
         run: |
@@ -33,7 +31,7 @@ jobs:
       - name: Find latest release version
         id: last_release
         run: >-
-          echo tag=$(
+          echo previous_release_tag=$(
           aws ecr describe-images --repository-name=${{ vars.ECR_NAME }} --image-ids=imageTag=production |
           jq '.imageDetails[0].imageTags[] | select(startswith("release-"))' -r |
           sed 's|-|/|') >> $GITHUB_OUTPUT
@@ -61,6 +59,8 @@ jobs:
       - name: "Push to ${{ vars.ECR_URL }}"
         run: |
           docker push -a ${ECR}
+    outputs:
+      previous_release_tag: ${{ steps.last_release.outputs.previous_release_tag }}
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -86,10 +86,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Create GitHub release
         run: >-
+          PREVIOUS=${{ needs.build.outputs.previous_release_tag }};
           gh release create "${{github.ref_name}}"
-           --verify-tag
-           --generate-notes
-           --prerelease
-           --notes-start-tag ${{ needs.build.outputs.previous_release_tag }}
+          --verify-tag
+          --generate-notes
+          --prerelease
+          $([ -n "$PREVIOUS"] && echo --notes-start-tag $PREVIOUS)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
