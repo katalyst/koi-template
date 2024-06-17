@@ -1,21 +1,6 @@
 require:
   - rubocop-katalyst
-  - rubocop-capybara
-  - rubocop-factory_bot
 
-# https://raw.githubusercontent.com/thoughtbot/guides/master/style/ruby/.rubocop.yml
-
-AllCops:
-  Exclude:
-    - bin/*
-    - config/**/*
-    - db/**/*
-    - deploy/*
-    - node_modules/**/*
-    - vendor/bundle/**/*
-  NewCops: enable
-  TargetRubyVersion: 3.3
-RSpec/MultipleMemoizedHelpers:
-  Max: 25
-Bundler/OrderedGems:
-  Enabled: true
+inherit_mode:
+  merge:
+    - Exclude
