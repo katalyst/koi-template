@@ -44,7 +44,7 @@ def apply_template!
 
     run("rake db:prepare db:migrate")
 
-    run("rubocop -A || true")
+    run("rubocop -A || rubocop --auto-gen-config")
     run("rake autocorrect || true")
     run("bundle lock --add-platform aarch64-linux")
     run("bundle lock --add-platform x86_64-linux")
@@ -140,8 +140,6 @@ def setup_search
   case options[:database]
   when "postgresql"
     gem "pg_search"
-  else
-    nil
   end
 end
 
@@ -223,8 +221,8 @@ def install_active_storage
     production:  :s3,
   }.each do |env, service|
     gsub_file "config/environments/#{env}.rb",
-         /(config.active_storage.service =).+/,
-         "\\1 #{service.inspect}"
+              /(config.active_storage.service =).+/,
+              "\\1 #{service.inspect}"
   end
 end
 
