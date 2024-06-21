@@ -12,6 +12,14 @@ module Koi
           end
         end
 
+        def default_table_query_component(component = nil)
+          if component
+            @table_query_component = component
+          else
+            @table_query_component || Koi::TableQueryComponent
+          end
+        end
+
         def default_summary_table_component(component = nil)
           if component
             @summary_table_component = component
