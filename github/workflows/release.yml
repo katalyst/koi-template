@@ -91,6 +91,6 @@ jobs:
           --verify-tag
           --generate-notes
           --prerelease
-          $([ -n "$PREVIOUS"] && echo --notes-start-tag $PREVIOUS)
+          $([ -n "$PREVIOUS" ] && echo --notes-start-tag $PREVIOUS)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
