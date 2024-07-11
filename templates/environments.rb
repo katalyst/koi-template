@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # Use rails_semantic_logger to log to stdout in JSON format
 gsub_file("config/environments/production.rb", /^ +# Log to STDOUT by default\n(?: +[^# ].+\n)*/) do

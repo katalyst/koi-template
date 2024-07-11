@@ -11,7 +11,7 @@ namespace :assets do
 
     puts "Copying #{from_root} to #{to_root}"
 
-    Dir[from_root.join("**/*.{js,jpg,jpeg,gif,png,css}")].sort.each do |from|
+    Dir[from_root.join("**/*.{js,jpg,jpeg,gif,png,css}")].each do |from|
       to = to_root.join(Pathname(from).relative_path_from(from_root))
 
       FileUtils.mkdir_p(File.dirname(to))

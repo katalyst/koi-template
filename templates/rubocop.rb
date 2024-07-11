@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 gem_group(:development, :test) do
   gem("rubocop-katalyst", require: false)

@@ -1,11 +1,11 @@
+inherit_from: .rubocop_todo.yml
+
 require:
   - rubocop-katalyst
 
-AllCops:
-  TargetRubyVersion: 3.3
+inherit_mode:
+  merge:
+    - Exclude
 
-Lint/EmptyFile:
-  Enabled: false
-
-Style/FrozenStringLiteralComment:
+Rails:
   Enabled: false

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 return if file_contains?("Gemfile", "rspec-rails")
 

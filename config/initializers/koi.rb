@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Koi::Menu.priority = {
   "Navigations" => "/admin/navigation",
 }

@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 remove_file("app/javascript/controllers/hello_controller.js")
 remove_file("config/initializers/content_security_policy.rb")

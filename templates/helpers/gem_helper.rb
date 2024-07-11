@@ -14,8 +14,8 @@ module GemHelper
   # Adds a gem to the Gemfile.
   #
   # Defaults to inserting above the development, test group (unlike thor).
-  def gem(gem, **options)
-    (@gem_helper || GemBuilder.new(self, [])).call(gem, **options)
+  def gem(gem, **)
+    (@gem_helper || GemBuilder.new(self, [])).call(gem, **)
   end
 
   def unpin_gem(gem)

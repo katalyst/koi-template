@@ -154,7 +154,7 @@ def setup_foreman
 end
 
 def setup_rakefile
-  template("Rakefile", force: true)
+  template("Rakefile.template", "Rakefile", force: true)
 end
 
 def setup_timezone
