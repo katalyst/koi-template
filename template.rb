@@ -35,6 +35,7 @@ def apply_template!
 
     install_dartsass
     install_active_storage
+    install_flipper
     install_koi
 
     remove_unused_files
@@ -224,6 +225,10 @@ def install_active_storage
               /(config.active_storage.service =).+/,
               "\\1 #{service.inspect}"
   end
+end
+
+def install_flipper
+  run("rails g flipper:active_record")
 end
 
 def install_koi
