@@ -115,7 +115,8 @@ def setup_sentry
 end
 
 def setup_github_actions
-  directory("github", ".github")
+  remove_file(".github/workflows/ci.yml")
+  directory("github", ".github", force: true)
 end
 
 def setup_dartsass

@@ -6,4 +6,4 @@ gem_group(:development, :test) do
   gem("erb_lint", require: false)
 end
 
-template("rubocop.yml", ".rubocop.yml")
+template("rubocop.yml", ".rubocop.yml", force: true)
