@@ -34,7 +34,7 @@ end
 
 RSpec.configure do |config|
   config.prepend_before(type: :view) do |view|
-    return unless view.id.include?("spec/views/admin")
+    next unless view.id.include?("spec/views/admin")
 
     controller.class.default_form_builder(Koi::FormBuilder)
     controller.extend(Koi::Test::Views::AdminHelpers)
