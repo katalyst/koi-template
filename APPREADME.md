@@ -8,6 +8,7 @@ To run the rails server as well as watching for dartsass changes, the
 application provides a Procfile (run through foreman) to use this, run `bin/dev`
 then visit `localhost`.
 
+<% if @add_koi %>
 ### Admin
 
 Koi has been mounted automatically at `/admin`, which can be configured via the
@@ -24,7 +25,7 @@ bin/admin-adduser
 If your username matches your Katalyst email address then when you're running
 locally with local admin enabled in AdminController then you will be
 automatically signed in as yourself. 
-
+<% end %>
 ### Prerequisites
 
 This project uses:
@@ -33,7 +34,7 @@ This project uses:
   - [Ruby on Rails](https://rubyonrails.org/)
   - [Postgres](https://www.postgresql.org/)
   - [RSpec](https://github.com/rspec/rspec-rails)
-  - [Koi](https://github.com/katalyst/koi)
+<% if @add_koi %>- [Koi](https://github.com/katalyst/koi)<% end %>
   - [Rubocop Katalyst](https://github.com/katalyst/rubocop-katalyst)
   - [Katalyst BasicAuth](https://github.com/katalyst/katalyst-basic-auth)
   - [Sentry](https://sentry.io)
