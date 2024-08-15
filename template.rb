@@ -5,6 +5,8 @@ fail("Rails 7.0.0 or greater is required") if Rails.version <= "7"
 def apply_template!
   add_template_repository_to_source_path
 
+  @add_koi = yes?("Would you like include koi? (y/n)")
+
   setup_readme
   setup_rubocop
   setup_rspec
@@ -19,7 +21,7 @@ def apply_template!
   setup_foreman
   setup_rakefile
   setup_timezone
-  setup_koi
+  setup_koi if @add_koi
   setup_homepage
   setup_release_tag
   setup_routes
@@ -36,7 +38,7 @@ def apply_template!
     install_dartsass
     install_active_storage
     install_flipper
-    install_koi
+    install_koi if @add_koi
 
     remove_unused_files
     override_default_files
@@ -67,10 +69,10 @@ def add_template_repository_to_source_path
     template_root = Dir.mktmpdir("koi-template-")
     at_exit { FileUtils.remove_entry(template_root) }
     git clone: [
-      "--quiet",
-      "https://github.com/katalyst/koi-template.git",
-      template_root,
-    ].map(&:shellescape).join(" ")
+                 "--quiet",
+                 "https://github.com/katalyst/koi-template.git",
+                 template_root,
+               ].map(&:shellescape).join(" ")
 
     if (branch = __FILE__[%r{koi-template/(.+)/template.rb}, 1])
       Dir.chdir(template_root) { git checkout: branch }
@@ -187,12 +189,16 @@ def setup_homepage
 end
 
 def setup_routes
-  directory("config/routes")
+  directory("config/routes") if @add_koi
   template("config/routes.rb", force: true)
 end
 
 def setup_stylesheets
-  directory("app/assets/stylesheets")
+  if @add_koi
+    directory("app/assets/stylesheets")
+  else
+    directory("app/assets/stylesheets", exclude_pattern: /admin.scss/)
+  end
 end
 
 def remove_unused_files
