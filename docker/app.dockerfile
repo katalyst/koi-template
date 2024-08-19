@@ -27,7 +27,7 @@ ENV BUNDLE_IGNORE_MESSAGES=true
 ENV BUNDLE_JOBS=4
 ENV BUNDLE_WITHOUT="development:test"
 
-# Install gems, forwarding your ssh agent for github authentication
+# Install gems
 RUN gem install bundler -v "${BUNDLER_VERSION}" && \
     bundle install
 
