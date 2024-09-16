@@ -104,7 +104,7 @@ ENV TZ="Australia/Adelaide"
 
 # Configure two puma processes, configure in terraform based on available memory
 ENV PUMA_WORKERS=2
-ENV PUMA_MAX_THREADS=5
+ENV PUMA_MAX_THREADS=3
 
 ARG CDN_ASSET_PREFIX
 ENV CDN_ASSET_PREFIX=$CDN_ASSET_PREFIX
