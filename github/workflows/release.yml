@@ -14,6 +14,9 @@ env:
 jobs:
   build:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: "Install AWS CLI" # not installed by default on buildjet images
         run: |
@@ -25,9 +28,9 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
+          role-session-name: release
+          role-to-assume: ${{ vars.ECR_ROLE }}
       - name: Find latest release version
         id: last_release
         run: >-
@@ -46,8 +49,9 @@ jobs:
           docker build
           --build-arg "APPLICATION_REVISION=${{ github.sha }}"
           --build-arg "APPLICATION_VERSION=${{ github.ref_name }}"
-          --build-arg "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
-          --build-arg "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          --build-arg "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}"
+          --build-arg "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}"
+          --build-arg "AWS_SESSION_TOKEN=${{ env.AWS_SESSION_TOKEN }}"
           --build-arg "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
           --build-arg "BUILDKIT_INLINE_CACHE=1"
           --build-arg "BUNDLER_VERSION=$(tail -n1 Gemfile.lock | xargs echo)"
@@ -65,13 +69,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: staging
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
+          role-session-name: deploy
+          role-to-assume: ${{ vars.ECR_ROLE }}
       - name: Deploy to ${{ vars.ecs_service}}
         run: >-
           aws ecs update-service --cluster ${{ vars.ecs_cluster }}
