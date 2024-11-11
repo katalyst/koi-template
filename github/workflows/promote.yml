@@ -33,11 +33,18 @@ jobs:
             --query images[].imageManifest \
             --output text >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-      - name: Promote image manifest to production
+      - name: Mark image as a production release candidate
         run: >-
           aws ecr put-image
           --repository-name ${{ vars.ECR_NAME }}
           --image-tag "$(echo $GITHUB_REF_NAME | sed 's|release/|prod-release-|g')"
+          --image-manifest "$MANIFEST"
+          --region ${{ env.AWS_DEFAULT_REGION }}
+          --output json
+      - name: Mark image as the current production release
+        run: >-
+          aws ecr put-image
+          --repository-name ${{ vars.ECR_NAME }}
           --image-tag production
           --image-manifest "$MANIFEST"
           --region ${{ env.AWS_DEFAULT_REGION }}

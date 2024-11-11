@@ -1,0 +1,66 @@
+#!/bin/bash
+
+source "$(dirname "$0")/../config/ecs.env"
+
+set -eu
+set -o pipefail
+
+function list_tags {
+  LIMIT=10
+  aws ecr describe-images \
+    --repository-name "$ECR_REPO" \
+    --query "reverse(sort_by(imageDetails[], &imagePushedAt))[:${LIMIT}].[imageTags]" \
+    --output text
+}
+
+function get_image_manifest {
+  TAG=$1
+  aws ecr batch-get-image \
+    --repository-name "$ECR_REPO" \
+    --image-ids imageTag="$TAG" \
+    --query images[].imageManifest \
+    --output text
+}
+
+function update_image_tag {
+  aws ecr put-image \
+    --repository-name "$ECR_REPO" \
+    --image-tag "$IMAGE_TAG" \
+    --image-manifest "$MANIFEST" \
+    --output text
+}
+
+REVERT_TAG=""
+DRY_RUN=""
+
+while getopts e:t:r:n option
+do
+    case "${option}" in
+        e) ENVIRONMENT=${OPTARG};;
+        t) REVERT_TAG=${OPTARG};;
+        n) DRY_RUN=1;;
+        *) exit 1;;
+    esac
+done
+
+if [ -z "$REVERT_TAG" ]; then
+  list_tags
+  exit 0
+fi
+
+DOCKER_TAG=$(echo "$REVERT_TAG" | tr "/" "-")
+MANIFEST=$(get_image_manifest $DOCKER_TAG) || true
+
+if [ -z "$MANIFEST" ]; then
+  echo "Release tag $REVERT_TAG not present in ECR repo, exiting without reverting"
+  exit 1
+fi
+
+[ "$ENVIRONMENT" == "production" ] && IMAGE_TAG="production" || IMAGE_TAG="latest"
+
+if [ -z $DRY_RUN ]; then
+  update_image_tag > /dev/null
+  echo "Reverted ECS to $REVERT_TAG in $ENVIRONMENT, run 'bin/ecs-redeploy-containers -e $ENVIRONMENT' to redeploy"
+else
+  echo "[DRY RUN] Would revert ECS to $REVERT_TAG in $ENVIRONMENT"
+end
