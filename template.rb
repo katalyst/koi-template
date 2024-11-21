@@ -229,7 +229,7 @@ def install_active_storage
 end
 
 def install_flipper
-  run("rails g flipper:active_record")
+  run("rails g flipper:setup")
 end
 
 def install_koi

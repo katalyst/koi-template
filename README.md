@@ -22,15 +22,18 @@ This project provides a base project following Katalyst best practices. It confi
 ```shell
 rails new sprint0 -d postgresql \
             --skip-action-cable \
-            --skip-action-mailer \
             --skip-action-mailbox \
+            --skip-action-mailer \
+            --skip-ci \
             --skip-dev-gems \
             --skip-docker \
+            --skip-git \
             --skip-jbuilder \
+            --skip-kamal \
+            --skip-keeps \
             --skip-system-test \
             --skip-test \
-            --skip-git \
-            --skip-keeps \
+            --skip-thruster \
             -a propshaft \
             -m https://raw.githubusercontent.com/katalyst/koi-template/main/template.rb
 ```
