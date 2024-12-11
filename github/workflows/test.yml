@@ -10,6 +10,7 @@ on:
 jobs:
   lint_test:
     runs-on: ubuntu-latest
+    environment: test
     services:
       postgres:
         image: postgres
