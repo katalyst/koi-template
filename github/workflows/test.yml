@@ -19,6 +19,8 @@ jobs:
         ports:
           - 5432:5432
     steps:
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libvips
       - name: Check out repository code
         uses: actions/checkout@v4
       - name: Setup Ruby and install gems
