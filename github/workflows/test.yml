@@ -42,5 +42,5 @@ jobs:
         with:
           name: rspec-output
           path: |
-            logs
+            log
             tmp/capybara
