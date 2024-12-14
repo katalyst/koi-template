@@ -4,9 +4,13 @@ RSpec.shared_context "with admin session" do
   let(:session_for) { respond_to?(:admin) ? admin : create(:admin) }
 
   before do
-    if session_for.present?
-      post admin_session_path, params: { admin: { email: session_for.email, password: session_for.password } }
-    end
+    next if session_for.blank?
+
+    post admin_session_path, params: { admin: { email: session_for.email, password: session_for.password } }
+
+    next if session_for.otp.blank?
+
+    post admin_session_path, params: { admin: { token: session_for.otp.now } }
   end
 end
 

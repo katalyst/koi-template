@@ -3,20 +3,31 @@
 require "rails_helper"
 
 RSpec.describe "Admin login" do
-  let!(:admin) { create(:admin) }
-
   it "Shows admin login" do
     visit admin_root_path
-    expect(page).to have_text "Log in"
+    expect(page).to have_field("Email")
   end
 
-  it "Allows a admin to login" do
-    visit admin_root_path
+  context "when logged in" do
+    before do
+      admin = create(:admin)
 
-    fill_in "Email", with: admin.email
-    fill_in "Password", with: admin.password
-    click_on "Log in"
+      visit admin_root_path
 
-    expect(page).to have_current_path admin_dashboard_path
+      fill_in "Email", with: admin.email
+      click_on "Next"
+
+      fill_in "Password", with: admin.password
+      click_on "Next"
+
+      if admin.try(:otp)
+        fill_in "Token", with: admin.otp.now
+        click_on "Next"
+      end
+    end
+
+    it "Shows dashboard" do
+      expect(page).to have_current_path admin_dashboard_path
+    end
   end
 end
