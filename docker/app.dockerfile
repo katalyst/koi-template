@@ -2,7 +2,7 @@
 
 # Precompile assets in a separate container to avoid having to install node in the final container
 # Using ruby default image for build and slim for final container (smaller)
-FROM ruby:3.3 AS build
+FROM ruby:3.4 AS build
 
 # Install OS packages
 
@@ -65,7 +65,7 @@ RUN if [ -n "$CDN_ASSET_PREFIX" ]; then \
 # END OF CDN ##
 
 # Assemble all resources that will be used in the final container so they can be copied as a single layer
-FROM ruby:3.3-slim AS base
+FROM ruby:3.4-slim AS base
 
 ARG APPLICATION_VERSION
 ARG APPLICATION_REVISION
@@ -80,7 +80,7 @@ RUN mkdir -p logs tmp/cache tmp/pids tmp/sockets
 # END OF BASE ##
 
 # Build the app container that will run in production
-FROM ruby:3.3-slim AS app
+FROM ruby:3.4-slim AS app
 
 ARG PACKAGES="libcurl4-openssl-dev libpq-dev nginx shared-mime-info libvips libjemalloc2"
 
