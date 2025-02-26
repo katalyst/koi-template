@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require File.expand_path("../../config/environment", __FILE__)
+require "optparse"
+
+parser = OptionParser.new do |parser|
+  parser.banner = "Usage: admin-reset [options] email"
+
+  parser.on("-h", "--help", "Prints this help") do
+    puts parser
+    exit
+  end
+end
+parser.parse!
+
+if ARGV.empty?
+  puts parser
+  exit 1
+end
+
+unless (admin_user = Admin::User.find_by(email: ARGV.first))
+  puts "Unknown user `#{ARVG.first}`"
+  exit 1
+end
+
+token = admin_user.generate_token_for(:password_reset)
+begin
+  puts "URL: #{Rails.application.routes.url_helpers.admin_session_token_url(token)}"
+rescue ArgumentError
+  puts "Path: #{Rails.application.routes.url_helpers.admin_session_token_path(token)}"
+end
+
+exit 0

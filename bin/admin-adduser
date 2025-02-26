@@ -3,17 +3,16 @@
 require File.expand_path("../../config/environment", __FILE__)
 require "optparse"
 
-user = Admin::User.new
-user.password = SecureRandom.base58(16)
+admin_user = Admin::User.new
 
 parser = OptionParser.new do |parser|
   parser.banner = "Usage: admin-adduser [options]"
 
   parser.on("-e", "--email EMAIL", "User email address") do |v|
-    user.email = v
+    admin_user.email = v
   end
   parser.on("-n", "--name NAME", "User name") do |v|
-    user.name = v
+    admin_user.name = v
   end
   parser.on("-h", "--help", "Prints this help") do
     puts parser
@@ -28,16 +27,24 @@ def fatal(message, show_usage: nil)
   exit 1
 end
 
-if Rails.env.local? && user.email.blank? && user.name.blank?
-  user.email = "#{ENV['USER']}@katalyst.com.au"
-  user.name  = `id -F`.strip
+if Rails.env.local? && admin_user.email.blank? && admin_user.name.blank?
+  admin_user.email = "#{ENV['USER']}@katalyst.com.au"
+  admin_user.name  = `id -F`.strip
 end
 
-fatal("Name is required", show_usage: parser) if user.name.blank?
-fatal("Email is required", show_usage: parser) if user.email.blank?
-fatal("Admin user #{user.email} already exists") if Admin::User.exists?(email: user.email)
-fatal(user.errors.full_messages.to_sentence) unless user.valid?
+fatal("Name is required", show_usage: parser) if admin_user.name.blank?
+fatal("Email is required", show_usage: parser) if admin_user.email.blank?
+fatal("Admin user #{admin_user.email} already exists") if Admin::User.exists?(email: admin_user.email)
+fatal(admin_user.errors.full_messages.to_sentence) unless admin_user.valid?
 
-user.save!
-puts "Created admin user #{user.email} (#{user.name})"
-puts "Password is #{user.password}"
+admin_user.save!
+puts "Created admin user #{admin_user.name} <#{admin_user.email}>"
+
+token = admin_user.generate_token_for(:password_reset)
+begin
+  puts "Login: #{Rails.application.routes.url_helpers.admin_session_token_url(token)}"
+rescue ArgumentError
+  puts "Login: #{Rails.application.routes.url_helpers.admin_session_token_path(token)}"
+end
+
+exit 0
