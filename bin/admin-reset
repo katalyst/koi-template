@@ -19,7 +19,7 @@ if ARGV.empty?
 end
 
 unless (admin_user = Admin::User.find_by(email: ARGV.first))
-  puts "Unknown user `#{ARVG.first}`"
+  puts "Unknown user `#{ARGV.first}`"
   exit 1
 end
 
