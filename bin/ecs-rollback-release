@@ -63,4 +63,4 @@ if [ -z $DRY_RUN ]; then
   echo "Reverted ECS to $REVERT_TAG in $ENVIRONMENT, run 'bin/ecs-redeploy-containers -e $ENVIRONMENT' to redeploy"
 else
   echo "[DRY RUN] Would revert ECS to $REVERT_TAG in $ENVIRONMENT"
-end
+fi
