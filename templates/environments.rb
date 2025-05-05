@@ -3,14 +3,14 @@
 
 # Configure logging
 gsub_file("config/environments/production.rb",
-          /^\s+# Log to STDOUT with the current request id as a default log tag.\n\s+config.log_tags.*\b\s+config.logger.*\n/) do
+          / +# Log to STDOUT with.*\n\s+config.log_tags\s+=.*\n\s+config.logger\s+=.*\n/) do
   <<-RUBY
-  # Configure logging as JSON to stdout.
+  # Log to STDOUT as JSON.
   $stdout.sync = true
   config.rails_semantic_logger.add_file_appender = false
   config.semantic_logger.add_appender(io: $stdout, formatter: :json, application: "cotl-www")
 
-  # Include request metadata in tagged logs
+  # Include request metadata in tagged logs.
   config.log_tags = {
     request_id: :request_id,
     ip:         :remote_ip,
