@@ -11,7 +11,7 @@ env:
   ECR: ${{ vars.ECR_URL }}
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-arm
     environment: production
     permissions:
       contents: read

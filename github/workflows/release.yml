@@ -13,16 +13,11 @@ env:
   ECR: ${{ vars.ECR_URL }}
 jobs:
   build:
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    runs-on: ubuntu-latest-arm
     permissions:
       contents: read
       id-token: write
     steps:
-      - name: "Install AWS CLI" # not installed by default on buildjet images
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
       - name: "Get docker sanitised release tag"
         run: echo RELEASE_TAG=$(echo $GITHUB_REF_NAME | sed 's|/|-|g') >> $GITHUB_ENV
       - name: Configure AWS Credentials
@@ -67,7 +62,7 @@ jobs:
       previous_release_tag: ${{ steps.last_release.outputs.previous_release_tag }}
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-arm
     environment: staging
     permissions:
       contents: read
@@ -87,7 +82,7 @@ jobs:
           --region ${{ env.AWS_DEFAULT_REGION }}
   release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-arm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
