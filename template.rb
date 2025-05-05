@@ -25,6 +25,7 @@ def apply_template!
   setup_routes
   setup_ecs
   setup_logger
+  setup_active_storage
 
   cleanup_gemfile
 
@@ -166,6 +167,10 @@ end
 
 def setup_logger
   gem("rails_semantic_logger")
+end
+
+def setup_active_storage
+  gem("aws-sdk-s3")
 end
 
 # Use rails_semantic_logger to log to stdout in JSON format
