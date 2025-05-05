@@ -26,6 +26,7 @@ def apply_template!
   setup_ecs
   setup_logger
   setup_active_storage
+  setup_puma
 
   cleanup_gemfile
 
@@ -171,6 +172,10 @@ end
 
 def setup_active_storage
   gem("aws-sdk-s3")
+end
+
+def setup_puma
+  apply "templates/puma.rb"
 end
 
 # Use rails_semantic_logger to log to stdout in JSON format

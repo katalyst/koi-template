@@ -103,9 +103,10 @@ ENV EXECJS_RUNTIME="Disabled"
 ENV RAILS_ENV="production"
 ENV TZ="Australia/Adelaide"
 
-# Configure two puma processes, configure in terraform based on available memory
-ENV PUMA_WORKERS=2
-ENV PUMA_MAX_THREADS=3
+# Configure puma
+ENV PUMA_BIND="unix:///app/tmp/sockets/puma.sock"
+ENV RAILS_MAX_THREADS=3
+ENV WEB_CONCURRENCY=2
 
 ARG CDN_ASSET_PREFIX
 ENV CDN_ASSET_PREFIX=$CDN_ASSET_PREFIX
