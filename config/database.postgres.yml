@@ -4,8 +4,8 @@ default: &default
 
 development:
   <<: *default
-  database: <%= @app_name %>_development
+  database: "<%= ecs_name %>-development"
 
 test:
   <<: *default
-  database: <%= @app_name %>_test
+  database: "<%= ecs_name %>-test"

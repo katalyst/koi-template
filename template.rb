@@ -266,11 +266,15 @@ def configure_git
   git(add: "-A")
   git(commit: "-m 'Initial commit'")
 
-  git(remote: "add origin git@github.com:katalyst/#{@app_name.dasherize}.git") unless ENV["CI"]
+  git(remote: "add origin git@github.com:katalyst/#{ecs_name}.git") unless ENV["CI"]
 end
 
 def setup_ecs
   template("config/ecs.env")
+end
+
+def ecs_name(env = nil)
+  [app_name.dasherize, env].compact.join("-")
 end
 
 apply_template!
