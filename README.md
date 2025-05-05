@@ -31,6 +31,7 @@ rails new sprint0 -d postgresql \
             --skip-jbuilder \
             --skip-kamal \
             --skip-keeps \
+            --skip-solid \
             --skip-system-test \
             --skip-test \
             --skip-thruster \
@@ -50,6 +51,7 @@ rails new sprint0 -d postgresql \
  * --skip-docker: we generate our own docker configuration
  * --skip-git: we have set up git to point to Katalyst github
  * --skip-keeps: we only create the keep files we need
+ * --skip-solid: we don't install solid* out of the box, only when needed
  * -a propshaft: we use propshaft for asset pipeline
  * -m ...: set local file system path for this template
 
