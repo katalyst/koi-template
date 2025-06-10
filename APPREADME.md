@@ -4,9 +4,7 @@ Katalyst project for <%= @app_name %>.
 
 ## Development
 
-To run the rails server as well as watching for dartsass changes, the
-application provides a Procfile (run through foreman) to use this, run `bin/dev`
-then visit `localhost`.
+Run `bin/dev` to start foreman then visit `localhost`.
 
 ### Admin
 
@@ -37,7 +35,6 @@ This project uses:
   - [Rubocop Katalyst](https://github.com/katalyst/rubocop-katalyst)
   - [Katalyst BasicAuth](https://github.com/katalyst/katalyst-basic-auth)
   - [Sentry](https://sentry.io)
-  - [Dartsass](https://github.com/rails/dartsass-rails)
 
 ## CI/CD
 

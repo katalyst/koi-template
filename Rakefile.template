@@ -15,10 +15,10 @@ RuboCop::Katalyst::ErbLintTask.new
 require "rubocop/katalyst/prettier_task"
 RuboCop::Katalyst::PrettierTask.new
 
-# Development: compile dartsass
-# Test: compile all assets and load the database config
-desc "Prepare for tests by compiling necessary assets"
-task "spec:prepare": Rails.env.development? ? %w[dartsass:build] : %w[assets:precompile db:setup]
+if Rails.env.test?
+  desc "Prepare for tests by compiling assets and seeding database"
+  task "spec:prepare": %w[assets:precompile db:setup]
+end
 
 desc "Run all tests"
 task spec: :lint

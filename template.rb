@@ -11,7 +11,6 @@ def apply_template!
   setup_basic_auth
   setup_sentry
   setup_github_actions
-  setup_dartsass
   setup_flipper
   setup_database
   setup_search
@@ -35,7 +34,6 @@ def apply_template!
     setup_environments
     setup_stylesheets
 
-    install_dartsass
     install_active_storage
     install_flipper
     install_koi
@@ -119,10 +117,6 @@ end
 def setup_github_actions
   remove_file(".github/workflows/ci.yml")
   directory("github", ".github", force: true)
-end
-
-def setup_dartsass
-  apply "templates/dartsass.rb"
 end
 
 def setup_flipper
@@ -243,14 +237,10 @@ def install_flipper
 end
 
 def install_koi
+  run("rails action_text:install")
   run("rails koi:install:migrations")
   run("rails katalyst_content:install:migrations")
   run("rails katalyst_navigation:install:migrations")
-  run("rails action_text:install")
-end
-
-def install_dartsass
-  run("rails dartsass:install")
 end
 
 def add_docker

@@ -7,7 +7,6 @@ This project provides a base project following Katalyst best practices. It confi
 * Linting using Rubocop
 * Basic auth
 * Importmaps
-* Dartsass
 * Docker
 * Git
 
