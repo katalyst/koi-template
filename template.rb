@@ -196,7 +196,7 @@ def setup_routes
 end
 
 def setup_stylesheets
-  directory("app/assets/stylesheets")
+  directory("app/assets/stylesheets", force: true)
 end
 
 def remove_unused_files
