@@ -1,0 +1,108 @@
+# syntax=docker/dockerfile:1
+# check=error=true
+
+ARG RUBY_VERSION=3.4
+
+FROM ruby:$RUBY_VERSION-slim AS base
+
+ARG PACKAGES="curl libvips libjemalloc2 postgresql-client"
+ARG APP_NAME="<%= @app_name %>"
+
+# Rails app lives here
+WORKDIR /rails
+
+# Install base packages
+RUN apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $PACKAGES && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Set production environment
+ENV APP_NAME="${APP_NAME}" \
+    BUNDLE_DEPLOYMENT="1" \
+    BUNDLE_PATH="/usr/local/bundle" \
+    BUNDLE_WITHOUT="development:test" \
+    EXECJS_RUNTIME="Disabled" \
+    RAILS_ENV="production" \
+    PUMA_SSL="1" \
+    TZ="Australia/Adelaide"
+
+# Create a rails group and user for non-privileged access
+RUN groupadd --system --gid 1000 rails && \
+    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    echo "PS1='\u@\${APP_NAME}-\${RAILS_ENV}:\w\$ '" >> /etc/bash.bashrc
+
+# Build rails gems and assets in a throw-away build stage to reduce size of final image
+FROM base AS build
+
+# Install packages needed to build gems
+ARG BUILD_PACKAGES="build-essential git libcurl4-openssl-dev libpq-dev libyaml-dev pkg-config zlib1g-dev"
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y $BUILD_PACKAGES && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Install application gems
+COPY Gemfile Gemfile.lock ./
+RUN bundle install && \
+    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
+    bundle exec bootsnap precompile --gemfile
+
+# Copy application code
+COPY --link . .
+
+# Precompile bootsnap code for faster boot times
+RUN bundle exec bootsnap precompile app/ lib/
+
+# If set, assets will be compiled into a subdirectory of public/ with this prefix
+ARG CDN_ASSET_PREFIX=""
+
+# Precompile assets for production
+RUN DATABASE_URL="postgresql://localhost" \
+    SECRET_KEY_BASE_DUMMY=1 \
+    ./bin/rails assets:precompile
+
+# END OF BUILD ##
+
+# Copy assets to the CDN
+FROM amazon/aws-cli:latest AS cdn
+
+ARG AWS_DEFAULT_REGION="ap-southeast-2"
+ARG CDN_ASSET_PREFIX=""
+ARG S3_ASSETS_BUCKET=""
+
+COPY --from=build /rails/public public
+RUN --mount=type=secret,id=aws-key-id,env=AWS_ACCESS_KEY_ID \
+    --mount=type=secret,id=aws-secret-key,env=AWS_SECRET_ACCESS_KEY \
+    --mount=type=secret,id=aws-session-token,env=AWS_SESSION_TOKEN \
+    if [ -n "$CDN_ASSET_PREFIX" ]; then \
+      aws s3 sync --only-show-errors public/$CDN_ASSET_PREFIX s3://$S3_ASSETS_BUCKET/$CDN_ASSET_PREFIX; \
+    fi
+
+# END OF CDN ##
+
+# Final stage for app image
+FROM base
+
+ARG APPLICATION_VERSION
+ARG APPLICATION_REVISION
+ARG CDN_ASSET_PREFIX
+
+# Puma and Rails configuration
+ENV CDN_ASSET_PREFIX=$CDN_ASSET_PREFIX \
+    WEB_CONCURRENCY=2 \
+    RAILS_MAX_THREADS=5
+
+# Assemble layers
+COPY --link . .
+COPY --from=build --link "${BUNDLE_PATH}" "${BUNDLE_PATH}"
+COPY --from=cdn /aws/public public
+RUN echo $APPLICATION_VERSION > VERSION && \
+    echo $APPLICATION_REVISION > REVISION && \
+    echo "$APP_NAME ($APPLICATION_VERSION) [$APPLICATION_REVISION]" > /etc/motd && \
+    mkdir -p db log ssl storage tmp/cache tmp/pids tmp/sockets && \
+    chown -R rails:rails db log ssl storage tmp \
+      public # /sitemap.xml.gz
+
+USER 1000:1000
+EXPOSE 4443
+ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+CMD ["./bin/rails", "server"]

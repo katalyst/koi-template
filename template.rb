@@ -244,7 +244,7 @@ def install_koi
 end
 
 def add_docker
-  directory("docker", mode: :preserve)
+  template("Dockerfile", force: true)
   template(".dockerignore", force: true)
 end
 

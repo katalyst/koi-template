@@ -20,16 +20,6 @@ gsub_file("config/environments/production.rb",
   RUBY
 end
 
-## Disable serving static files
-gsub_file "config/environments/production.rb",
-          /#\s*(config.public_file_server.enabled = false)/,
-          '\1'
-
-## Enable x_sendfile_header and assume NGINX
-gsub_file "config/environments/production.rb",
-          /#\s*(config.action_dispatch.x_sendfile_header = "X-Accel-Redirect")/,
-          '\1'
-
 ## Enable assume_ssl as we always use a reverse proxy
 gsub_file "config/environments/production.rb",
           /#\s*(config.assume_ssl = true)/,

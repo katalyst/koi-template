@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# If running the rails server then create or migrate existing database
+if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
+  ./bin/rails db:prepare
+
+  # create a self-signed certificate for puma
+  mkdir -p ~/.ssl
+  openssl req -x509 -newkey rsa:2048 -nodes -days 730 \
+    -subj '/CN=docker/' \
+    -keyout ~/.ssl/docker.key \
+    -out ~/.ssl/docker.crt
+fi
+
+exec "${@}"

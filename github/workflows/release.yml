@@ -44,17 +44,19 @@ jobs:
           docker build
           --build-arg "APPLICATION_REVISION=${{ github.sha }}"
           --build-arg "APPLICATION_VERSION=${{ github.ref_name }}"
-          --build-arg "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}"
-          --build-arg "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}"
-          --build-arg "AWS_SESSION_TOKEN=${{ env.AWS_SESSION_TOKEN }}"
           --build-arg "AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}"
           --build-arg "BUILDKIT_INLINE_CACHE=1"
           --build-arg "BUNDLER_VERSION=$(tail -n1 Gemfile.lock | xargs echo)"
+          --build-arg "RUBY_VERSION=$(tail -n1 .ruby-version | xargs echo)"
           --build-arg "CDN_ASSET_PREFIX=${{ env.RELEASE_TAG }}"
           --build-arg "S3_ASSETS_BUCKET=${ASSETS_BUCKET}"
+          --secret "id=aws-key-id,env=AWS_ACCESS_KEY_ID"
+          --secret "id=aws-secret-key,env=AWS_SECRET_ACCESS_KEY"
+          --secret "id=aws-session-token,env=AWS_SESSION_TOKEN"
           --tag "${ECR}:latest"
           --tag "${ECR}:${RELEASE_TAG}"
-          --file docker/app.dockerfile .
+          --file Dockerfile
+          .
       - name: "Push to ${{ vars.ECR_URL }}"
         run: |
           docker push -a ${ECR}
