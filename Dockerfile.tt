@@ -6,7 +6,7 @@ ARG RUBY_VERSION=3.4
 FROM ruby:$RUBY_VERSION-slim AS base
 
 ARG PACKAGES="curl libvips libjemalloc2 postgresql-client"
-ARG APP_NAME="<%= @app_name %>"
+ARG APPLICATION_NAME="<%= @app_name %>"
 
 # Rails app lives here
 WORKDIR /rails
@@ -17,7 +17,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment
-ENV APP_NAME="${APP_NAME}" \
+ENV APPLICATION_NAME="${APPLICATION_NAME}" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development:test" \
@@ -29,7 +29,8 @@ ENV APP_NAME="${APP_NAME}" \
 # Create a rails group and user for non-privileged access
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    echo "PS1='\u@\${APP_NAME}-\${RAILS_ENV}:\w\$ '" >> /etc/bash.bashrc
+    echo "PS1='\u@\${APPLICATION_NAME}-\${RAILS_ENV}:\w\$ '" >> /etc/bash.bashrc && \
+    echo "cat /etc/motd" >> /etc/bash.bashrc
 
 # Build rails gems and assets in a throw-away build stage to reduce size of final image
 FROM base AS build
@@ -97,7 +98,7 @@ COPY --from=build --link "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=cdn /aws/public public
 RUN echo $APPLICATION_VERSION > VERSION && \
     echo $APPLICATION_REVISION > REVISION && \
-    echo "$APP_NAME ($APPLICATION_VERSION) [$APPLICATION_REVISION]" > /etc/motd && \
+    echo "$APPLICATION_NAME ($APPLICATION_VERSION) [$APPLICATION_REVISION]" > /etc/motd && \
     mkdir -p db log ssl storage tmp/cache tmp/pids tmp/sockets && \
     chown -R rails:rails db log ssl storage tmp \
       public # /sitemap.xml.gz

@@ -6,7 +6,7 @@ set -eu
 set -o pipefail
 
 TASK=""
-COMMAND="/bin/bash"
+COMMAND="/bin/bash --login"
 DRY_RUN=false
 
 while getopts e:t:c:n option
