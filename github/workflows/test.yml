@@ -21,10 +21,18 @@ jobs:
         ports:
           - 5432:5432
     steps:
+      - name: Configure dpkg
+        run: |
+          sudo mkdir -p /etc/dpkg/dpkg.cfg.d
+          sudo sh -c 'echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/dpkg-katalyst-ci'
+          sudo sh -c 'echo "path-exclude /usr/share/man/*" >> /etc/dpkg/dpkg.cfg.d/dpkg-katalyst-ci'
+          sudo sh -c 'echo "path-exclude /usr/share/doc/*" >> /etc/dpkg/dpkg.cfg.d/dpkg-katalyst-ci'
+          sudo sh -c 'echo "path-exclude /usr/share/doc-base/*" >> /etc/dpkg/dpkg.cfg.d/dpkg-katalyst-ci'
       - name: Install dependencies
         env:
+          DEBIAN_FRONTEND: noninteractive
           DEPENDENCIES: "libvips"
-        run: sudo apt-get install -y $DEPENDENCIES || (sudo apt-get update && sudo apt-get install -y $DEPENDENCIES)
+        run: sudo apt-get install --no-install-recommends -y $DEPENDENCIES || (sudo apt-get update && sudo apt-get install --no-install-recommends -y $DEPENDENCIES)
       - name: Check out repository code
         uses: actions/checkout@v4
       - name: Setup Ruby and install gems
