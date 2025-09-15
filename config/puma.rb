@@ -28,7 +28,7 @@ pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
 # When running in cluster mode with preload_app! we need to re-open the logger
 # outputs in each worker thread (after fork).
 if ENV.fetch("WEB_CONCURRENCY", 0).to_i > 1
-  on_worker_boot do
+  before_worker_boot do
     SemanticLogger.reopen if defined?(SemanticLogger)
   end
 end
