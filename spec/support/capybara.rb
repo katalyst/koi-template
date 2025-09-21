@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
+require "capybara/cuprite"
 require "capybara/rspec"
 require "rack_session_access/capybara"
-require "capybara/cuprite"
 
 RSpec.configure do |config|
   Capybara.default_driver = Capybara.javascript_driver = :cuprite
@@ -19,6 +19,11 @@ RSpec.configure do |config|
       inspector:       false,
       # required for docker (github-ci)
       browser_options: { "no-sandbox": nil },
+      # block hosts that are not required for tests
+      url_blacklist:   [
+        %r{//fonts.googleapis.com}, # inconsolata, etc
+        %r{//rsms.me}, # inter
+      ],
     }
   end
 
