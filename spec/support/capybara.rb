@@ -17,8 +17,12 @@ RSpec.configure do |config|
     driven_by :cuprite, screen_size: [1920, 1080], options: {
       headless:        true,
       inspector:       false,
-      # required for docker (github-ci)
-      browser_options: { "no-sandbox": nil },
+      browser_options: {
+        "no-sandbox":            nil, # required for docker (github-ci)
+        "disable-dev-shm-usage": nil, # helps speed up chrome startup in CI env
+        "disable-gpu":           nil, # helps speed up chrome startup in CI env
+      },
+      process_timeout: 20, # default is 10. Wait longer for Chrome initial startup.
       # block hosts that are not required for tests
       url_blacklist:   [
         %r{//fonts.googleapis.com}, # inconsolata, etc
