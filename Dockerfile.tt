@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1
 # check=error=true
 
+ARG APPLICATION_NAME="<%= @app_name %>"
 ARG RUBY_VERSION=3.4
 
 FROM ruby:$RUBY_VERSION-slim AS base
 
 ARG PACKAGES="curl libvips libjemalloc2 postgresql-client"
-ARG APPLICATION_NAME="<%= @app_name %>"
 
 # Rails app lives here
 WORKDIR /rails
@@ -15,6 +15,10 @@ WORKDIR /rails
 RUN apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $PACKAGES && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+ARG APPLICATION_NAME
+ARG APPLICATION_VERSION
+ARG APPLICATION_REVISION
 
 # Set production environment
 ENV APPLICATION_NAME="${APPLICATION_NAME}" \
@@ -29,6 +33,7 @@ ENV APPLICATION_NAME="${APPLICATION_NAME}" \
 # Create a rails group and user for non-privileged access
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
+    echo "$APPLICATION_NAME ($APPLICATION_VERSION) [$APPLICATION_REVISION]" > /etc/motd && \
     echo "PS1='\u@\${APPLICATION_NAME}-\${RAILS_ENV}:\w\$ '" >> /etc/bash.bashrc && \
     echo "cat /etc/motd" >> /etc/bash.bashrc
 
@@ -80,11 +85,25 @@ RUN --mount=type=secret,id=aws-key-id,env=AWS_ACCESS_KEY_ID \
 
 # END OF CDN ##
 
-# Final stage for app image
-FROM base
+# Assemble everything into a single layer
+FROM base AS assemble
 
 ARG APPLICATION_VERSION
 ARG APPLICATION_REVISION
+
+COPY --link . .
+COPY --from=build /rails/lib/data lib/data
+COPY --from=build /rails/tmp/cache/bootsnap tmp/cache/bootsnap
+COPY --from=cdn /aws/public public
+RUN echo $APPLICATION_VERSION > VERSION && \
+    echo $APPLICATION_REVISION > REVISION && \
+    mkdir -p db log ssl storage tmp/pids tmp/sockets && \
+    chown -R rails:rails db log ssl storage tmp \
+      public # /sitemap.xml.gz
+
+# Final stage for app image
+FROM base
+
 ARG CDN_ASSET_PREFIX
 
 # Puma and Rails configuration
@@ -93,15 +112,8 @@ ENV CDN_ASSET_PREFIX=$CDN_ASSET_PREFIX \
     RAILS_MAX_THREADS=5
 
 # Assemble layers
-COPY --link . .
 COPY --from=build --link "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=cdn /aws/public public
-RUN echo $APPLICATION_VERSION > VERSION && \
-    echo $APPLICATION_REVISION > REVISION && \
-    echo "$APPLICATION_NAME ($APPLICATION_VERSION) [$APPLICATION_REVISION]" > /etc/motd && \
-    mkdir -p db log ssl storage tmp/cache tmp/pids tmp/sockets && \
-    chown -R rails:rails db log ssl storage tmp \
-      public # /sitemap.xml.gz
+COPY --from=assemble --link /rails .
 
 USER 1000:1000
 EXPOSE 4443
