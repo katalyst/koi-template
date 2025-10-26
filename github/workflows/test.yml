@@ -35,8 +35,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache: yarn
-      - run: yarn install
-      - name: Run tests
+      - name: Setup
+        run: |
+          bin/setup --skip-server
+      - name: Tests
         id: test
         env:
           RAILS_ENV: test
