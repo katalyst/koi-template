@@ -7,8 +7,8 @@ ActiveSupport.on_load(:active_record) do
   Sentry.init do |config|
     config.enabled_environments = %w[staging production]
     config.release              = File.read(version).strip.split("/").last if version.exist?
-    filter             = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
-    config.before_send          = lambda do |event, _hint|
+    filter = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+    config.before_send = lambda do |event, _hint|
       # Sanitize extra data
       if event.extra
         event.extra = filter.filter(event.extra)

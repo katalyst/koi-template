@@ -15,7 +15,7 @@ require "shoulda/matchers"
 WebMock.disable_net_connect!(allow_localhost: true)
 
 # Include support helpers
-Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
+Rails.root.glob("spec/support/**/*.rb").each { |f| require f }
 
 # Apply pending migrations
 begin
