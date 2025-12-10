@@ -92,7 +92,6 @@ ARG APPLICATION_VERSION
 ARG APPLICATION_REVISION
 
 COPY --link . .
-COPY --from=build /rails/lib/data lib/data
 COPY --from=build /rails/tmp/cache/bootsnap tmp/cache/bootsnap
 COPY --from=cdn /aws/public public
 RUN echo $APPLICATION_VERSION > VERSION && \
