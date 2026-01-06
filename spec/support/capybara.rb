@@ -21,8 +21,7 @@ RSpec.configure do |config|
       browser_options: { "no-sandbox": nil },
       # block hosts that are not required for tests
       url_blacklist:   [
-        %r{//fonts.googleapis.com}, # inconsolata, etc
-        %r{//rsms.me}, # inter
+        # %r{google-analytics\.com}, # Google Analytics
       ],
     }
   end
