@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Install dependencies
         env:
-          DEPENDENCIES: "libvips"
+          DEPENDENCIES: libcurl4-openssl-dev libvips
         run: sudo apt-get install -y $DEPENDENCIES || (sudo apt-get update && sudo apt-get install -y $DEPENDENCIES)
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -35,16 +35,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache: yarn
-      - name: Setup
-        run: |
-          bin/setup --skip-server
-      - name: Tests
-        id: test
+      - name: CI
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost/test
         run: |
-          bundle exec rake
+          bin/ci
       - name: Archive screenshots and logs
         if: failure()
         uses: actions/upload-artifact@v4

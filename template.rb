@@ -10,6 +10,7 @@ def apply_template!
   setup_rspec
   setup_basic_auth
   setup_sentry
+  setup_ci
   setup_github_actions
   setup_flipper
   setup_database
@@ -49,6 +50,7 @@ def apply_template!
     run("rake autocorrect || true")
     run("bundle lock --add-platform aarch64-linux")
     run("bundle lock --add-platform x86_64-linux")
+    run("bundle lock --normalize-platforms")
 
     add_docker
     configure_git
@@ -112,6 +114,10 @@ def setup_sentry
   gem("sentry-rails")
 
   template("config/initializers/sentry.rb")
+end
+
+def setup_ci
+  copy_file("config/ci.rb", force: true)
 end
 
 def setup_github_actions
