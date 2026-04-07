@@ -26,13 +26,13 @@ jobs:
           DEPENDENCIES: libcurl4-openssl-dev libvips
         run: sudo apt-get install -y $DEPENDENCIES || (sudo apt-get update && sudo apt-get install -y $DEPENDENCIES)
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Ruby and install gems
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           cache: yarn
       - name: CI
@@ -43,7 +43,7 @@ jobs:
           bin/ci
       - name: Archive screenshots and logs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: rspec-output
           path: |

@@ -21,7 +21,7 @@ jobs:
       - name: "Get docker sanitised release tag"
         run: echo RELEASE_TAG=$(echo $GITHUB_REF_NAME | sed 's|/|-|g') >> $GITHUB_ENV
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           role-session-name: release
@@ -38,7 +38,7 @@ jobs:
           aws ecr get-login-password --region ${{ env.AWS_DEFAULT_REGION }} |
           docker login --username AWS --password-stdin ${ECR}
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: "Build ${{ github.ref_name }}"
         run: >-
           docker build
@@ -71,7 +71,7 @@ jobs:
       id-token: write
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
           role-session-name: deploy
@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest-arm
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Create GitHub release
         run: >-
           PREVIOUS=${{ needs.build.outputs.previous_release_tag }};
