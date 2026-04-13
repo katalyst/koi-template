@@ -1,24 +1,38 @@
 # frozen_string_literal: true
 
 RSpec.shared_context "with admin session" do
-  let(:session_for) { respond_to?(:admin) ? admin : create(:admin) }
+  let(:session_for) { respond_to?(:admin) ? admin : create(:admin_user) }
 
-  before do
-    next if session_for.blank?
+  before { create_admin_session(session_for) }
 
-    post admin_session_path, params: { admin: { email: session_for.email, password: session_for.password } }
+  def create_admin_session(admin)
+    return if admin.blank?
 
-    next if session_for.otp.blank?
+    post admin_session_path, params: { admin: { email: admin.email, password: admin.password } }
 
-    post admin_session_path, params: { admin: { token: session_for.otp.now } }
+    return if admin.otp.blank?
+
+    post admin_session_path, params: { admin: { token: admin.otp.now } }
   end
 end
 
 RSpec.shared_examples "requires admin" do
-  let(:session_for) { nil }
+  def create_admin_session(_)
+    nil # no-op, skip session creation
+  end
 
   it "redirects to admin login" do
     action
     expect(response).to redirect_to(new_admin_session_path)
+  end
+end
+
+RSpec.shared_context "with bearer token authentication" do
+  def create_admin_session(_)
+    nil # no-op, skip session creation
+  end
+
+  def headers
+    { "Authorization" => "Bearer #{session_for.generate_token_for(:api_access)}" }
   end
 end
