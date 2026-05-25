@@ -33,6 +33,7 @@ RSpec.shared_context "with bearer token authentication" do
   end
 
   def headers
-    { "Authorization" => "Bearer #{session_for.generate_token_for(:api_access)}" }
+    device_authorization = session_for.device_authorizations.create!(attributes_for(:admin_device_authorization))
+    { "Authorization" => "Bearer #{device_authorization.generate_token_for(:api_access)}" }
   end
 end
