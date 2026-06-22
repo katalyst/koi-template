@@ -27,6 +27,8 @@ def apply_template!
   setup_logger
   setup_active_storage
   setup_puma
+  setup_solid_queue
+  setup_thermite
 
   cleanup_gemfile
 
@@ -35,9 +37,10 @@ def apply_template!
     setup_environments
     setup_stylesheets
 
-    install_active_storage
+    run("rails g thermite:install:active_storage --force")
     install_flipper
     install_koi
+    run("rails g thermite:install:solid_queue")
 
     remove_unused_files
     override_default_files
@@ -178,6 +181,17 @@ def setup_puma
   apply "templates/puma.rb"
 end
 
+def setup_solid_queue
+  gem("solid_queue")
+end
+
+def setup_thermite
+  gem_group(:development, :test) do
+    # remove git source once gem is ready for release
+    gem("katalyst-thermite", git: "https://github.com/katalyst/thermite.git")
+  end
+end
+
 # Use rails_semantic_logger to log to stdout in JSON format
 def setup_environments
   apply "templates/environments.rb"
@@ -222,20 +236,6 @@ end
 
 def setup_release_tag
   apply "templates/release-tag.rb"
-end
-
-def install_active_storage
-  run("rails active_storage:install")
-  {
-    development: :local,
-    test:        :test,
-    staging:     :s3,
-    production:  :s3,
-  }.each do |env, service|
-    gsub_file "config/environments/#{env}.rb",
-              /(config.active_storage.service =).+/,
-              "\\1 #{service.inspect}"
-  end
 end
 
 def install_flipper

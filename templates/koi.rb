@@ -8,7 +8,6 @@ uncomment_lines("config/application.rb", /active_job/)
 uncomment_lines("config/application.rb", /action_text/)
 uncomment_lines("config/application.rb", /action_mailer/)
 uncomment_lines("config/application.rb", /active_storage/)
-template("config/storage.yml", force: true)
 
 # sets up initial admin account
 append_file("db/seeds.rb", "Koi::Engine.load_seed")
