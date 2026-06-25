@@ -37,10 +37,10 @@ def apply_template!
     setup_environments
     setup_stylesheets
 
+    run("rails g flipper:setup")
     run("rails g thermite:install:active_storage --force")
-    install_flipper
-    install_koi
     run("rails g thermite:install:solid_queue")
+    install_koi
 
     remove_unused_files
     override_default_files
@@ -129,7 +129,8 @@ def setup_github_actions
 end
 
 def setup_flipper
-  apply "templates/flipper.rb"
+  gem("flipper")
+  gem("flipper-active_record")
 end
 
 def setup_database
@@ -238,10 +239,6 @@ def setup_release_tag
   apply "templates/release-tag.rb"
 end
 
-def install_flipper
-  run("rails g flipper:setup")
-end
-
 def install_koi
   run("rails action_text:install")
   run("rails koi:install:migrations")
@@ -261,7 +258,6 @@ def configure_git
 
   append_to_file(".gitignore", "app/assets/builds/*")
   append_to_file(".gitignore", "\n!/app/assets/builds/.keep")
-  append_to_file(".gitignore", "\n/public/admin/flipper")
 
   if ENV["CI"]
     git(config: "--global user.name Katalyst CI")
