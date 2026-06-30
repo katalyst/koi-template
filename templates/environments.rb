@@ -7,8 +7,9 @@ gsub_file("config/environments/production.rb",
   <<-RUBY
   # Log to STDOUT as JSON.
   $stdout.sync = true
-  config.rails_semantic_logger.add_file_appender = false
-  config.semantic_logger.add_appender(io: $stdout, formatter: :json, application: Rails.application.name)
+  config.rails_semantic_logger.appenders do |appenders|
+    appenders.add(application: name, formatter: :json, io: $stdout)
+  end
 
   # Include request metadata in tagged logs.
   config.log_tags = {
