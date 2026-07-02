@@ -18,8 +18,11 @@ else
   port ENV.fetch("PORT", 3000)
 end
 
-# Run the Solid Queue supervisor inside Puma for single-server deployments
-plugin :solid_queue if ENV["SOLID_QUEUE_IN_PUMA"]
+# Run Solid Queue in async mode inside Puma for single-server deployments
+if ENV["SOLID_QUEUE_IN_PUMA"]
+  plugin :solid_queue
+  solid_queue_mode :async if ENV.fetch("WEB_CONCURRENCY", 0).to_i.zero?
+end
 
 # Specify the PID file. Defaults to tmp/pids/server.pid in development.
 # In other environments, only set the PID file if requested.
