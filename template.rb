@@ -247,8 +247,7 @@ def install_koi
 end
 
 def add_docker
-  template("Dockerfile", force: true)
-  template(".dockerignore", force: true)
+  run("rails g thermite:install:docker --force")
 end
 
 def configure_git
