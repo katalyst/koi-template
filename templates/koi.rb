@@ -12,6 +12,9 @@ uncomment_lines("config/application.rb", /active_storage/)
 # sets up initial admin account
 append_file("db/seeds.rb", "Koi::Engine.load_seed")
 
+# install default config
+template("config/koi.yml")
+
 # adds navigation items to admin menu
 template("config/initializers/koi.rb")
 

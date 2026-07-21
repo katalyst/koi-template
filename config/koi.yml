@@ -1,0 +1,17 @@
+# Koi configuration
+
+shared:
+  # Trust configuration for password-less API authentication.
+  # See koi's docs/passwordless-api-authentication.md for details
+  identity:
+    providers:
+      # Katalyst's AWS account
+      katalyst_aws:
+        issuer: https://a1789190-8dcb-4973-9aae-7acf5c30ee9f.tokens.sts.global.api.aws
+        keys: discover
+    members:
+      # Katalyst engineers can authenticate using their SSO tokens
+      engineers:
+        provider: katalyst_aws
+        scope: admin/user
+        subject: arn:aws:iam::445107346210:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_Engineer_f3b75210c9ce2d5e
