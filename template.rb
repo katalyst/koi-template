@@ -12,6 +12,10 @@ def apply_template!
   gem("sentry-rails")
   gem("solid_queue")
 
+  gem_group(:development, :test) do
+    gem("katalyst-thermite")
+  end
+
   setup_readme
   setup_rubocop
   setup_rspec
@@ -30,7 +34,6 @@ def apply_template!
   setup_ecs
   setup_logger
   setup_puma
-  setup_thermite
 
   cleanup_gemfile
 
@@ -166,13 +169,6 @@ end
 
 def setup_puma
   apply "templates/puma.rb"
-end
-
-def setup_thermite
-  gem_group(:development, :test) do
-    # remove git source once gem is ready for release
-    gem("katalyst-thermite", git: "https://github.com/katalyst/thermite.git")
-  end
 end
 
 # Use rails_semantic_logger to log to stdout in JSON format
