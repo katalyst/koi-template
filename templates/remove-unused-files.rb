@@ -2,9 +2,7 @@
 # frozen_string_literal: true
 
 remove_file("app/javascript/controllers/hello_controller.js")
-remove_file("config/initializers/content_security_policy.rb")
 remove_file("config/initializers/inflections.rb")
-remove_file("config/initializers/permissions_policy.rb")
 
 # this is installed when `rails action_text:install` is ran - these file are not needed
 remove_file("app/assets/stylesheets/actiontext.css")

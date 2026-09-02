@@ -5,14 +5,18 @@ fail("Rails 7.0.0 or greater is required") if Rails.version <= "7"
 def apply_template!
   add_template_repository_to_source_path
 
+  gem("aws-sdk-s3")
+  gem("flipper")
+  gem("flipper-active_record")
+  gem("katalyst-basic-auth")
+  gem("sentry-rails")
+  gem("solid_queue")
+
   setup_readme
   setup_rubocop
   setup_rspec
-  setup_basic_auth
-  setup_sentry
   setup_ci
   setup_github_actions
-  setup_flipper
   setup_database
   setup_search
   setup_seeds
@@ -25,9 +29,7 @@ def apply_template!
   setup_routes
   setup_ecs
   setup_logger
-  setup_active_storage
   setup_puma
-  setup_solid_queue
   setup_thermite
 
   cleanup_gemfile
@@ -39,6 +41,9 @@ def apply_template!
 
     run("rails g flipper:setup")
     run("rails g thermite:install:active_storage --force")
+    run("rails g thermite:install:content_security_policy --force")
+    run("rails g thermite:install:permissions_policy --force")
+    run("rails g thermite:install:sentry")
     run("rails g thermite:install:solid_queue")
     install_koi
 
@@ -109,16 +114,6 @@ def setup_rspec
   apply "spec/template.rb"
 end
 
-def setup_basic_auth
-  gem("katalyst-basic-auth")
-end
-
-def setup_sentry
-  gem("sentry-rails")
-
-  template("config/initializers/sentry.rb")
-end
-
 def setup_ci
   copy_file("config/ci.rb", force: true)
 end
@@ -126,11 +121,6 @@ end
 def setup_github_actions
   remove_file(".github/workflows/ci.yml")
   directory("github", ".github", force: true)
-end
-
-def setup_flipper
-  gem("flipper")
-  gem("flipper-active_record")
 end
 
 def setup_database
@@ -174,16 +164,8 @@ def setup_logger
   gem("rails_semantic_logger")
 end
 
-def setup_active_storage
-  gem("aws-sdk-s3")
-end
-
 def setup_puma
   apply "templates/puma.rb"
-end
-
-def setup_solid_queue
-  gem("solid_queue")
 end
 
 def setup_thermite
