@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   lint_test:
-    runs-on: ubuntu-latest-m
+    runs-on: ubuntu-latest-arm
     services:
       postgres:
         image: postgres
@@ -21,10 +21,6 @@ jobs:
         ports:
           - 5432:5432
     steps:
-      - name: Install dependencies
-        env:
-          DEPENDENCIES: libcurl4-openssl-dev libvips
-        run: sudo apt-get install -y $DEPENDENCIES || (sudo apt-get update && sudo apt-get install -y $DEPENDENCIES)
       - name: Check out repository code
         uses: actions/checkout@v6
       - name: Setup Ruby and install gems

@@ -19,6 +19,8 @@ RSpec.configure do |config|
       inspector:       false,
       # required for docker (github-ci)
       browser_options: { "no-sandbox": nil },
+      # CI needs a 10+ seconds to load Chrome on cold boot
+      process_timeout: 30,
       # block hosts that are not required for tests
       url_blacklist:   [
         # %r{google-analytics\.com}, # Google Analytics

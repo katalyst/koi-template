@@ -59,9 +59,13 @@ def apply_template!
 
     run("rubocop -A || rubocop --auto-gen-config")
     run("rake autocorrect || true")
-    run("bundle lock --add-platform aarch64-linux")
-    run("bundle lock --add-platform x86_64-linux")
-    run("bundle lock --normalize-platforms")
+
+    # Katalyst prefers arm64 only. Rails adds x86_64-linux
+    # unconditionally and aarch64-linux only when generating on an arm64 host.
+    Bundler.with_original_env do
+      run("bundle lock --add-platform aarch64-linux")
+      run("bundle lock --remove-platform x86_64-linux")
+    end
 
     add_docker
     configure_git
